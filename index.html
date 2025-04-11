@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candelabra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --text-color: #ffffff;
+      --accent-color: #a46eff;
+      --accent-color-alt: #ffe680;
+      --highlight-color: #ff6ec7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(to bottom, #0d0d0d, #1a1a2e);
+      color: var(--text-color);
+      line-height: 1.6;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: rgba(0, 0, 0, 0.6);
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    nav .logo img { 
+      height: 64px;
+    }
+
+    .logo .highlight {
+      color: var(--highlight-color);
+    }
+
+    nav a {
+      color: var(--text-color);
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent-color);
+    }
+
+    header {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+      padding-top: 6rem;
+      position: relative;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d0d 100%);
+      overflow: hidden;
+    }
+
+    .graph-animation {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    header h1,
+    header .brand,
+    header p {
+      position: relative;
+      z-index: 1;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+    }
+
+    header .brand {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    header .brand .highlight {
+      color: var(--highlight-color);
+    }
+
+    header p {
+      font-size: 1.2rem;
+      color: #ccc;
+      max-width: 500px;
+    }
+
+    .cande {
+      color: #7f3fee; /* Deep purple */
+    }
+
+    .lab {
+      color: #ffe680; /* Corresponding yellow */
+    }
+
+    .section {
+      padding: 4rem 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .services, .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background-color: #1a1a2e;
+      padding: 2rem;
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 10px rgba(164, 110, 255, 0.2);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(164, 110, 255, 0.4);
+    }
+
+    .card h3 {
+      color: var(--accent-color-alt);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+
+    .cta-button {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0d0d0d;
+      background-color: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background-color: var(--accent-color-alt);
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      header h1 {
+        font-size: 2.2rem;
+      }
+      header .brand {
+        font-size: 1.8rem;
+      }
+      header p {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">
+      <img src="logo.png" alt="Candelabra Logo" />
+    </div>
+    <div>
+      <a href="#services">Services</a>
+      <a href="#why">Why Us</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <header>
+    <canvas class="graph-animation" id="bgCanvas"></canvas>
+    <div class="brand">
+      <span class="cande">Cande<span class="lab">lab</span>ra</span>
+    </div>
+    <h1>Illuminate Your Data</h1>
+    <p>Where Data Meets Intelligence, Smarter Systems and Brighter Decisions.</p>
+    <a class="cta-button" href="#contact">Let's Talk</a>
+  </header>
+
+  <section class="section" id="services">
+    <h2 style="text-align:center; margin-bottom:2rem;">Our Services</h2>
+    <div class="services">
+      <div class="card">
+        <h3>AI & Machine Learning</h3>
+        <p>We design and implement cutting-edge AI models and intelligent systems that learn and adapt from your data.</p>
+      </div>
+      <div class="card">
+        <h3>Data Analytics & Math</h3>
+        <p>Our expertise in data analytics and mathematical modeling helps uncover hidden patterns and drive better decisions.</p>
+      </div>
+      <div class="card">
+        <h3>Software Development</h3>
+        <p>Build robust, scalable backend and full-stack systems tailored to your data-driven workflows and business needs.</p>
+      </div>
+    </div>
+  </section>
+  
+
+  <section class="section" id="why">
+    <h2 style="text-align:center; margin-bottom:2rem;">Why Candelabra?</h2>
+    <div class="features">
+      <div class="card">
+        <h3>Innovative Solutions</h3>
+        <p>We bring cutting-edge ML and data-driven approaches tailored to your business.</p>
+      </div>
+      <div class="card">
+        <h3>Reliable Infrastructure</h3>
+        <p>Our backend systems ensure your data flows securely, quickly, and efficiently.</p>
+      </div>
+      <div class="card">
+        <h3>Actionable Insights</h3>
+        <p>We turn raw data into meaningful knowledge you can act on.</p>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section" id="contact">
+    <h2 style="text-align:center; margin-bottom:2rem;">Contact Us</h2>
+    <div style="text-align: center;">
+      <p>Email us at <a href="mailto:hello@candelabra.mk" style="color: var(--accent-color);">contact@candelabra.mk</a></p>
+      <p>or reach out through our socials.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2025 Candelabra. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const nodes = Array.from({ length: 60 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff88';
+
+      nodes.forEach(node => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < 120) {
+            ctx.strokeStyle = '#ffffff44';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      nodes.forEach(n => {
+        n.x += n.vx;
+        n.y += n.vy;
+
+        if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
