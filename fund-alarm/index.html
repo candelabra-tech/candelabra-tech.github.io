@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fund Alarm - Candelabra</title>
+  <link rel="icon" href="http://candelabra.mk/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="http://candelabra.mk/favicon-16x16.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- Plotly.js CDN - ready for later use -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --text-color: #ffffff;
+      --accent-color: #a46eff;
+      --accent-color-alt: #ffe680;
+      --highlight-color: #ff6ec7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(to bottom, #0d0d0d, #1a1a2e);
+      color: var(--text-color);
+      line-height: 1.6;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: rgba(0, 0, 0, 0.6);
+      position: fixed;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    nav .logo img { 
+      height: 64px;
+    }
+
+    .logo .highlight {
+      color: var(--highlight-color);
+    }
+
+    nav a {
+      color: var(--text-color);
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent-color);
+    }
+
+    header {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+      padding-top: 6rem;
+      position: relative;
+      background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d0d 100%);
+      overflow: hidden;
+    }
+
+    .graph-animation {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    header h1,
+    header .brand,
+    header p {
+      position: relative;
+      z-index: 1;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+    }
+
+    header .brand {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    header .brand .highlight {
+      color: var(--highlight-color);
+    }
+
+    header p {
+      font-size: 1.2rem;
+      color: #ccc;
+      max-width: 500px;
+    }
+
+    .cande {
+      color: #7f3fee; /* Deep purple */
+    }
+
+    .lab {
+      color: #ffe680; /* Corresponding yellow */
+    }
+
+    .section {
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .charts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .chart-card {
+      background-color: #1a1a2e;
+      padding: 2rem;
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 10px rgba(164, 110, 255, 0.2);
+      min-height: 400px;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(164, 110, 255, 0.4);
+    }
+
+    .chart-card h3 {
+      color: var(--accent-color-alt);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .chart-placeholder {
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(45deg, #2a2a3e, #1a1a2e);
+      border: 2px dashed var(--accent-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-color);
+      font-style: italic;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background-color: #1a1a2e;
+      padding: 2rem;
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 10px rgba(164, 110, 255, 0.2);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(164, 110, 255, 0.4);
+    }
+
+    .card h3 {
+      color: var(--accent-color-alt);
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+
+    .cta-button {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0d0d0d;
+      background-color: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background-color: var(--accent-color-alt);
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      header h1 {
+        font-size: 2.2rem;
+      }
+      header .brand {
+        font-size: 1.8rem;
+      }
+      header p {
+        font-size: 1rem;
+      }
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+      .chart-card {
+        min-height: 350px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">
+      <img src="../logo.png" alt="Candelabra Logo" />
+    </div>
+    <div>
+      <a href="../index.html">Home</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#analytics">Analytics</a>
+      <a href="#alerts">Alerts</a>
+    </div>
+  </nav>
+
+  <header>
+    <canvas class="graph-animation" id="bgCanvas"></canvas>
+    <div class="brand">
+      <span class="cande">Fund<span class="lab">Alarm</span></span>
+    </div>
+    <h1>Smart Fund Monitoring</h1>
+    <p>Real-time fund performance tracking with intelligent alerts and comprehensive analytics.</p>
+    <a class="cta-button" href="#dashboard">View Dashboard</a>
+  </header>
+
+  <section class="section" id="dashboard">
+    <h2 style="text-align:center; margin-bottom:3rem; color: var(--accent-color);">Fund Performance Dashboard</h2>
+    
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3>Portfolio Overview</h3>
+        <div id="portfolio-chart" class="chart-placeholder">
+          Portfolio performance chart will be displayed here
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Fund Allocation</h3>
+        <div id="allocation-chart" class="chart-placeholder">
+          Fund allocation pie chart will be displayed here
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Performance Trends</h3>
+        <div id="trends-chart" class="chart-placeholder">
+          Performance trends over time will be displayed here
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Risk Metrics</h3>
+        <div id="risk-chart" class="chart-placeholder">
+          Risk analysis and metrics will be displayed here
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="analytics">
+    <h2 style="text-align:center; margin-bottom:2rem;">Analytics & Insights</h2>
+    <div class="features">
+      <div class="card">
+        <h3>Real-time Monitoring</h3>
+        <p>Track fund performance in real-time with live data feeds and instant updates on market changes.</p>
+      </div>
+      <div class="card">
+        <h3>Intelligent Alerts</h3>
+        <p>Receive smart notifications based on your risk tolerance and performance thresholds.</p>
+      </div>
+      <div class="card">
+        <h3>Predictive Analytics</h3>
+        <p>Leverage AI-powered insights to forecast trends and optimize your investment strategy.</p>
+      </div>
+      <div class="card">
+        <h3>Risk Assessment</h3>
+        <p>Comprehensive risk analysis with volatility metrics, correlation analysis, and stress testing.</p>
+      </div>
+      <div class="card">
+        <h3>Performance Benchmarking</h3>
+        <p>Compare your fund performance against market indices and peer funds for better decision making.</p>
+      </div>
+      <div class="card">
+        <h3>Custom Reports</h3>
+        <p>Generate detailed reports and export data for further analysis and compliance requirements.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="alerts">
+    <h2 style="text-align:center; margin-bottom:3rem; color: var(--accent-color);">Alert Configuration</h2>
+    
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3>Alert History</h3>
+        <div id="alerts-timeline" class="chart-placeholder">
+          Alert timeline and history will be displayed here
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>Alert Statistics</h3>
+        <div id="alerts-stats" class="chart-placeholder">
+          Alert frequency and statistics will be displayed here
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2025 Candelabra. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    // Background animation - same as main page
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const nodes = Array.from({ length: 60 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff88';
+
+      nodes.forEach(node => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < 120) {
+            ctx.strokeStyle = '#ffffff44';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      nodes.forEach(n => {
+        n.x += n.vx;
+        n.y += n.vy;
+
+        if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+        if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // CSV Data Loading Functions
+    async function loadCSVFile(csvPath) {
+      try {
+        const response = await fetch(csvPath);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvText = await response.text();
+        return parseCSV(csvText);
+      } catch (error) {
+        console.error('Error loading CSV file:', error);
+        return null;
+      }
+    }
+
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      if (lines.length === 0) return null;
+      
+      const headers = lines[0].split(',').map(h => h.trim());
+      const data = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || '';
+        });
+        data.push(row);
+      }
+      
+      return { headers, data };
+    }
+
+    // Chart creation functions
+    function createPortfolioChart(csvData) {
+      if (!csvData || !csvData.data.length) {
+        showPlaceholder('portfolio-chart', 'No portfolio data available');
+        return;
+      }
+
+      // Assuming CSV has columns: date, value
+      const trace = {
+        x: csvData.data.map(row => row.date || row.Date),
+        y: csvData.data.map(row => parseFloat(row.value || row.Value || 0)),
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#a46eff', width: 3 },
+        marker: { color: '#ffe680', size: 6 }
+      };
+
+      const layout = {
+        title: {
+          text: 'Portfolio Performance',
+          font: { color: '#ffe680' }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(26,26,46,0.8)',
+        font: { color: '#ffffff' },
+        xaxis: { 
+          gridcolor: '#444',
+          tickfont: { color: '#ccc' }
+        },
+        yaxis: { 
+          gridcolor: '#444',
+          tickfont: { color: '#ccc' }
+        }
+      };
+
+      Plotly.newPlot('portfolio-chart', [trace], layout, { responsive: true });
+    }
+
+    function createAllocationChart(csvData) {
+      if (!csvData || !csvData.data.length) {
+        showPlaceholder('allocation-chart', 'No allocation data available');
+        return;
+      }
+
+      // Assuming CSV has columns: fund_name, allocation
+      const trace = {
+        values: csvData.data.map(row => parseFloat(row.allocation || row.Allocation || 0)),
+        labels: csvData.data.map(row => row.fund_name || row.Fund || row.Name),
+        type: 'pie',
+        marker: {
+          colors: ['#a46eff', '#ffe680', '#ff6ec7', '#7f3fee', '#1a1a2e', '#4a90e2']
+        },
+        textfont: { color: '#ffffff' }
+      };
+
+      const layout = {
+        title: {
+          text: 'Fund Allocation',
+          font: { color: '#ffe680' }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#ffffff' }
+      };
+
+      Plotly.newPlot('allocation-chart', [trace], layout, { responsive: true });
+    }
+
+    function createTrendsChart(csvData) {
+      if (!csvData || !csvData.data.length) {
+        showPlaceholder('trends-chart', 'No trends data available');
+        return;
+      }
+
+      // Example multi-line chart for different funds
+      const fundNames = [...new Set(csvData.data.map(row => row.fund_name || row.Fund))];
+      const traces = fundNames.map((fund, index) => {
+        const fundData = csvData.data.filter(row => (row.fund_name || row.Fund) === fund);
+        return {
+          x: fundData.map(row => row.date || row.Date),
+          y: fundData.map(row => parseFloat(row.performance || row.Performance || 0)),
+          type: 'scatter',
+          mode: 'lines',
+          name: fund,
+          line: { 
+            color: ['#a46eff', '#ffe680', '#ff6ec7', '#7f3fee'][index % 4],
+            width: 2
+          }
+        };
+      });
+
+      const layout = {
+        title: {
+          text: 'Performance Trends',
+          font: { color: '#ffe680' }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(26,26,46,0.8)',
+        font: { color: '#ffffff' },
+        xaxis: { gridcolor: '#444' },
+        yaxis: { gridcolor: '#444' },
+        legend: { font: { color: '#ffffff' } }
+      };
+
+      Plotly.newPlot('trends-chart', traces, layout, { responsive: true });
+    }
+
+    function createRiskChart(csvData) {
+      if (!csvData || !csvData.data.length) {
+        showPlaceholder('risk-chart', 'No risk data available');
+        return;
+      }
+
+      // Bar chart for risk metrics
+      const trace = {
+        x: csvData.data.map(row => row.fund_name || row.Fund),
+        y: csvData.data.map(row => parseFloat(row.risk_score || row.Risk || 0)),
+        type: 'bar',
+        marker: {
+          color: '#ff6ec7',
+          opacity: 0.8
+        }
+      };
+
+      const layout = {
+        title: {
+          text: 'Risk Metrics',
+          font: { color: '#ffe680' }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(26,26,46,0.8)',
+        font: { color: '#ffffff' },
+        xaxis: { gridcolor: '#444' },
+        yaxis: { gridcolor: '#444' }
+      };
+
+      Plotly.newPlot('risk-chart', [trace], layout, { responsive: true });
+    }
+
+    function showPlaceholder(elementId, message) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.innerHTML = `<div class="chart-placeholder">${message}</div>`;
+      }
+    }
+
+    // Initialize charts when page loads
+    async function initializeCharts() {
+      try {
+        // Load the CSV file from the data directory
+        const csvData = await loadCSVFile('./data/fund-data.csv');
+        
+        if (csvData) {
+          console.log('CSV data loaded successfully:', csvData);
+          createPortfolioChart(csvData);
+          createAllocationChart(csvData);
+          createTrendsChart(csvData);
+          createRiskChart(csvData);
+        } else {
+          console.warn('Failed to load CSV data, showing placeholders');
+          showPlaceholder('portfolio-chart', 'Portfolio data will appear here when CSV is loaded');
+          showPlaceholder('allocation-chart', 'Fund allocation will appear here when CSV is loaded');
+          showPlaceholder('trends-chart', 'Performance trends will appear here when CSV is loaded');
+          showPlaceholder('risk-chart', 'Risk metrics will appear here when CSV is loaded');
+        }
+      } catch (error) {
+        console.error('Error initializing charts:', error);
+      }
+    }
+
+    // Initialize when page loads
+    window.addEventListener('DOMContentLoaded', initializeCharts);
+  </script>
+</body>
+</html>
