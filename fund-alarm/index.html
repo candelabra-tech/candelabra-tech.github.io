@@ -3,19 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fund Alarm - Candelabra</title>
+  <title>Аларм за Фондови - Македонски Инвестициски Фондови</title>
   <link rel="icon" href="http://candelabra.mk/favicon.ico" type="image/x-icon">
   <link rel="icon" href="http://candelabra.mk/favicon-16x16.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Plotly.js CDN - ready for later use -->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <style>
     :root {
-      --bg-color: #0d0d0d;
-      --text-color: #ffffff;
-      --accent-color: #a46eff;
-      --accent-color-alt: #ffe680;
-      --highlight-color: #ff6ec7;
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #151b2d;
+      --bg-card: #1e2642;
+      --bg-accent: #2a3655;
+      --text-primary: #ffffff;
+      --text-secondary: #b8c5d6;
+      --text-muted: #8a9bb5;
+      --accent-green: #00d4aa;
+      --accent-blue: #4a9eff;
+      --accent-gold: #f7b801;
+      --accent-red: #ff5757;
+      --accent-purple: #8b5cf6;
+      --border-color: #334566;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
     }
 
     * {
@@ -26,11 +37,12 @@
 
     body {
       font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(to bottom, #0d0d0d, #1a1a2e);
-      color: var(--text-color);
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      color: var(--text-primary);
       line-height: 1.6;
       scroll-behavior: smooth;
       overflow-x: hidden;
+      min-height: 100vh;
     }
 
     nav {
@@ -38,7 +50,9 @@
       justify-content: space-between;
       align-items: center;
       padding: 1rem 2rem;
-      background-color: rgba(0, 0, 0, 0.6);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
       position: fixed;
       width: 100%;
       z-index: 1000;
@@ -48,29 +62,47 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: var(--text-color);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-green);
     }
 
     nav .logo img { 
-      height: 64px;
+      height: 40px;
+      filter: brightness(1.2);
     }
 
     .logo .highlight {
-      color: var(--highlight-color);
+      color: var(--accent-gold);
     }
 
     nav a {
-      color: var(--text-color);
-      margin-left: 1.5rem;
+      color: var(--text-secondary);
+      margin-left: 2rem;
       text-decoration: none;
       font-weight: 500;
-      transition: color 0.3s ease;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      position: relative;
     }
 
     nav a:hover {
-      color: var(--accent-color);
+      color: var(--accent-green);
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+      transition: width 0.3s ease;
+    }
+
+    nav a:hover::after {
+      width: 100%;
     }
 
     header {
@@ -81,296 +113,941 @@
       align-items: center;
       text-align: center;
       padding: 2rem;
-      padding-top: 6rem;
       position: relative;
-      background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d0d 100%);
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 212, 170, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
       overflow: hidden;
     }
 
-    .graph-animation {
+    .financial-grid {
       position: absolute;
-      width: 100%;
-      height: 100%;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(52, 69, 102, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52, 69, 102, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
       z-index: 0;
     }
 
     header h1,
     header .brand,
-    header p {
+    header p,
+    header .stats-bar {
       position: relative;
       z-index: 1;
     }
 
-    header h1 {
-      font-size: 3rem;
-      color: var(--accent-color);
-      margin-bottom: 1rem;
-    }
-
     header .brand {
-      font-size: 2.5rem;
+      font-size: 3.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    header .brand .highlight {
-      color: var(--highlight-color);
+    header h1 {
+      font-size: 2rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-weight: 400;
     }
 
     header p {
-      font-size: 1.2rem;
-      color: #ccc;
-      max-width: 500px;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin-bottom: 2rem;
     }
 
-    .cande {
-      color: #7f3fee; /* Deep purple */
+    .stats-bar {
+      display: flex;
+      gap: 3rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .lab {
-      color: #ffe680; /* Corresponding yellow */
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .section {
-      padding: 4rem 2rem;
-      max-width: 1200px;
+      padding: 5rem 2rem;
+      max-width: 1400px;
       margin: auto;
     }
 
-    .charts-container {
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .dashboard-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
       gap: 2rem;
       margin-bottom: 3rem;
     }
 
     .chart-card {
-      background-color: #1a1a2e;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
       padding: 2rem;
-      border-radius: 12px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 0 10px rgba(164, 110, 255, 0.2);
-      min-height: 400px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-blue), var(--accent-gold));
     }
 
     .chart-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 20px rgba(164, 110, 255, 0.4);
+      transform: translateY(-8px);
+      border-color: var(--accent-green);
+      box-shadow: 0 20px 40px rgba(0, 212, 170, 0.15);
     }
 
-    .chart-card h3 {
-      color: var(--accent-color-alt);
-      margin-bottom: 1rem;
-      text-align: center;
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .chart-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+
+    .chart-change {
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .chart-change.positive {
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .chart-change.negative {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .chart-placeholder {
       width: 100%;
       height: 300px;
-      background: linear-gradient(45deg, #2a2a3e, #1a1a2e);
-      border: 2px dashed var(--accent-color);
-      border-radius: 8px;
+      background: linear-gradient(135deg, var(--bg-secondary), var(--bg-accent));
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--accent-color);
+      color: var(--text-muted);
       font-style: italic;
+      position: relative;
     }
 
-    .features {
+    .chart-placeholder::before {
+      content: '📊';
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      position: absolute;
+      top: 30%;
+    }
+
+    .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
     }
 
-    .card {
-      background-color: #1a1a2e;
-      padding: 2rem;
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 0 10px rgba(164, 110, 255, 0.2);
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
     }
 
-    .card:hover {
+    .feature-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 0 20px rgba(164, 110, 255, 0.4);
+      border-color: var(--accent-blue);
+      box-shadow: 0 15px 30px rgba(74, 158, 255, 0.15);
     }
 
-    .card h3 {
-      color: var(--accent-color-alt);
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-card:nth-child(1) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-green), rgba(0, 212, 170, 0.2));
+    }
+
+    .feature-card:nth-child(2) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-blue), rgba(74, 158, 255, 0.2));
+    }
+
+    .feature-card:nth-child(3) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-gold), rgba(247, 184, 1, 0.2));
+    }
+
+    .feature-card:nth-child(4) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-purple), rgba(139, 92, 246, 0.2));
+    }
+
+    .feature-card:nth-child(5) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-red), rgba(255, 87, 87, 0.2));
+    }
+
+    .feature-card:nth-child(6) .feature-icon {
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
       margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
     }
 
     .footer {
       text-align: center;
-      padding: 2rem;
-      color: #888;
+      padding: 3rem 2rem;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
     }
 
     .cta-button {
       display: inline-block;
       margin-top: 2rem;
-      padding: 0.8rem 1.6rem;
+      padding: 1rem 2rem;
       font-size: 1rem;
-      font-weight: bold;
-      color: #0d0d0d;
-      background-color: var(--accent-color);
+      font-weight: 600;
+      color: var(--bg-primary);
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       text-decoration: none;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .cta-button:hover::before {
+      left: 100%;
     }
 
     .cta-button:hover {
-      background-color: var(--accent-color-alt);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 212, 170, 0.3);
     }
 
-    @media (max-width: 600px) {
-      nav {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      header h1 {
-        font-size: 2.2rem;
-      }
-      header .brand {
-        font-size: 1.8rem;
-      }
-      header p {
-        font-size: 1rem;
-      }
-      .charts-container {
-        grid-template-columns: 1fr;
-      }
+    /* Market Status Indicator */
+    .market-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
     }
 
     @media (max-width: 768px) {
-      .charts-container {
+      nav {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      nav a {
+        margin-left: 1rem;
+      }
+      
+      header .brand {
+        font-size: 2.5rem;
+      }
+      
+      header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .stats-bar {
+        gap: 1.5rem;
+      }
+      
+      .dashboard-grid {
         grid-template-columns: 1fr;
       }
+      
       .chart-card {
         min-height: 350px;
+      }
+      
+      .section-title {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-grid,
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Fund Type Dashboard Styles */
+    .fund-type-section {
+      margin-bottom: 3rem;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid rgba(51, 69, 102, 0.3);
+    }
+
+    .fund-type-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .fund-type-title {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .fund-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .time-filter-btn, .toggle-all-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(51, 69, 102, 0.5);
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .time-filter-btn:hover, .toggle-all-btn:hover {
+      background: rgba(51, 69, 102, 0.8);
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+    }
+
+    .time-filter-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .fund-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      max-width: 600px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .legend-item:hover {
+      background: rgba(51, 69, 102, 0.8);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .legend-item.hidden {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .chart-container {
+      background: rgba(30, 41, 59, 0.4);
+      border-radius: 12px;
+      border: 1px solid rgba(51, 69, 102, 0.3);
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .fund-type-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .fund-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .fund-legend {
+        max-width: 100%;
+      }
+
+      .time-filter-container {
+        flex-wrap: wrap;
       }
     }
   </style>
 </head>
 <body>
+  <canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+  
   <nav>
     <div class="logo">
       <img src="../logo.png" alt="Candelabra Logo" />
+      <span>Фонд<span class="highlight">Аларм</span></span>
     </div>
     <div>
-      <a href="../index.html">Home</a>
-      <a href="#dashboard">Dashboard</a>
-      <a href="#analytics">Analytics</a>
-      <a href="#alerts">Alerts</a>
+      <a href="../index.html">Дома</a>
+      <a href="#notifications">Известувања</a>
+      <a href="#funds-prices">Цени на Фондови</a>
+      <a href="#dashboard">Табла</a>
+      <a href="#about">За Фондовите</a>
+      <a href="#analytics">Аналитика</a>
     </div>
   </nav>
 
   <header>
-    <canvas class="graph-animation" id="bgCanvas"></canvas>
-    <div class="brand">
-      <span class="cande">Fund<span class="lab">Alarm</span></span>
+    <div class="financial-grid"></div>
+    <div class="market-status">
+      <div class="status-dot"></div>
+      <span>Пазарите Отворени</span>
     </div>
-    <h1>Smart Fund Monitoring</h1>
-    <p>Real-time fund performance tracking with intelligent alerts and comprehensive analytics.</p>
-    <a class="cta-button" href="#dashboard">View Dashboard</a>
+    <div class="brand">ФондАларм</div>
+    <h1>Македонски Инвестициски Фондови - Анализа и Следење</h1>
+    <p>Следење на перформансите на македонските инвестициски фондови во реално време со напредна аналитика, процена на ризик и интелигентни известувања за оптимални инвестициски одлуки.</p>
+    
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value">147.2 млн ден</div>
+        <div class="stat-label">Вкупна Вредност</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">+8.4%</div>
+        <div class="stat-label">Годишен Принос</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">12</div>
+        <div class="stat-label">Активни Фондови</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">11.2%</div>
+        <div class="stat-label">Волатилност</div>
+      </div>
+    </div>
+    
+    <a class="cta-button" href="#funds-prices">Погледни Цени</a>
   </header>
 
-  <section class="section" id="dashboard">
-    <h2 style="text-align:center; margin-bottom:3rem; color: var(--accent-color);">Fund Performance Dashboard</h2>
+  <!-- Notifications -->
+  <section class="section" id="notifications">
+    <div class="section-header">
+      <h2 class="section-title">🔔 Известувања</h2>
+      <p class="section-subtitle">Фондови со значајни промени на цените: 1%+ неделно • 5%+ месечно • 10%+ за 6 месеци</p>
+    </div>
     
-    <div class="charts-container">
-      <div class="chart-card">
-        <h3>Portfolio Overview</h3>
-        <div id="portfolio-chart" class="chart-placeholder">
-          Portfolio performance chart will be displayed here
+    <div style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-color);">
+      <div id="auto-alerts" style="min-height: 200px;">
+        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+          <div class="loading-spinner" style="margin: 0 auto 1rem auto;"></div>
+          Се анализираат промените на цените...
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Fund Prices Table -->
+  <section class="section" id="funds-prices">
+    <div class="section-header">
+      <h2 class="section-title">Цени на Фондови</h2>
+      <p class="section-subtitle">Тековни НАВ и перформанси на сите активни македонски инвестициски фондови</p>
+    </div>
+    
+    <div class="table-wrapper" style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-color); overflow-x: auto;">
+      <table id="funds-table" style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border-color);">
+            <th style="text-align: left; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Фонд</th>
+            <th style="text-align: left; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Тип</th>
+            <th style="text-align: right; padding: 1rem; color: var(--accent-gold); font-weight: 600;">НАВ (ден)</th>
+            <th style="text-align: right; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Промена</th>
+            <th style="text-align: right; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Дневна %</th>
+            <th style="text-align: right; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Годишна %</th>
+            <th style="text-align: right; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Ризик</th>
+            <th style="text-align: center; padding: 1rem; color: var(--accent-gold); font-weight: 600;">Датум</th>
+          </tr>
+        </thead>
+        <tbody id="funds-table-body">
+          <!-- Data will be populated from data_all.csv -->
+          <tr>
+            <td colspan="8" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+              <div class="chart-placeholder">Вчитување на податоци за фондовите...</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       
-      <div class="chart-card">
-        <h3>Fund Allocation</h3>
-        <div id="allocation-chart" class="chart-placeholder">
-          Fund allocation pie chart will be displayed here
+      <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div id="funds-count" style="color: var(--text-muted); font-size: 0.9rem;">
+          📊 Вчитување на податоци...
+        </div>
+        <div id="last-updated" style="color: var(--text-muted); font-size: 0.9rem;">
+          🕒 Последно ажурирано: Вчитување...
         </div>
       </div>
-      
-      <div class="chart-card">
-        <h3>Performance Trends</h3>
-        <div id="trends-chart" class="chart-placeholder">
-          Performance trends over time will be displayed here
+    </div>
+  </section>
+
+  <section class="section" id="dashboard">
+    <div class="section-header">
+      <h2 class="section-title">Табла за Следење</h2>
+      <p class="section-subtitle">Анализа на перформансите по типови фондови со интерактивни графикони и временски филтери</p>
+    </div>
+
+    <!-- Global Time Filter -->
+    <div style="margin-bottom: 2rem; text-align: center;">
+      <div class="time-filter-container" style="display: inline-flex; gap: 0.5rem; padding: 0.5rem; background: rgba(51, 69, 102, 0.3); border-radius: 12px;">
+        <button class="time-filter-btn active" data-period="1M">1 Месец</button>
+        <button class="time-filter-btn" data-period="3M">3 Месеци</button>
+        <button class="time-filter-btn" data-period="6M">6 Месеци</button>
+        <button class="time-filter-btn" data-period="1Y">1 Година</button>
+        <button class="time-filter-btn" data-period="ALL">Сите</button>
+      </div>
+    </div>
+    
+    <!-- Equity Funds Chart -->
+    <div class="fund-type-section">
+      <div class="fund-type-header">
+        <h3 class="fund-type-title">📈 Акциски Фондови</h3>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="equity">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="equity-legend"></div>
         </div>
       </div>
+      <div class="chart-container">
+        <div id="equity-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+
+    <!-- Bond Funds Chart -->
+    <div class="fund-type-section">
+      <div class="fund-type-header">
+        <h3 class="fund-type-title">🏛️ Обврзнички Фондови</h3>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="bond">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="bond-legend"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="bond-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+
+    <!-- Balanced Funds Chart -->
+    <div class="fund-type-section">
+      <div class="fund-type-header">
+        <h3 class="fund-type-title">⚖️ Балансирани Фондови</h3>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="balanced">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="balanced-legend"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="balanced-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+
+    <!-- Money Market Funds Chart -->
+    <div class="fund-type-section">
+      <div class="fund-type-header">
+        <h3 class="fund-type-title">💰 Парични Фондови</h3>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="money">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="money-legend"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="money-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fund Distribution Section -->
+  <section class="section" id="fund-distribution">
+    <div class="section-header">
+      <h2 class="section-title">📊 Распределба на Фондови</h2>
+      <p class="section-subtitle">Анализа на вкупните средства по тип на фонд и распределба меѓу поединечни фондови</p>
+    </div>
+    
+    <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); margin-bottom: 2rem;" class="distribution-grid">
       
-      <div class="chart-card">
-        <h3>Risk Metrics</h3>
-        <div id="risk-chart" class="chart-placeholder">
-          Risk analysis and metrics will be displayed here
+      <!-- Fund Types Distribution -->
+      <div style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--accent-gold); margin: 0; font-size: 1.3rem;">🏦 Распределба по Тип</h3>
+          <div style="background: var(--accent-teal); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;" id="total-funds-badge">
+            24 Фондови
+          </div>
+        </div>
+        <div id="fund-types-chart" style="height: 350px;"></div>
+        <div id="fund-types-summary" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+          Се вчитуваат податоци...
+        </div>
+      </div>
+
+      <!-- Fund Type Summary -->
+      <div style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--accent-gold); margin: 0; font-size: 1.3rem;">� Вкупна Вредност</h3>
+          <div style="background: var(--accent-blue); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;" id="total-value-badge">
+            Вчитување...
+          </div>
+        </div>
+        <div id="fund-summary-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+          Се вчитуваат податоци...
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Individual Fund Type Distributions -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="color: var(--accent-gold); margin-bottom: 1.5rem; font-size: 1.4rem; text-align: center;">💰 Поделба по Фонд во секој Тип</h3>
+      <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));" id="fund-type-distributions">
+        
+        <!-- Equity Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #10b981;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">📈</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Акциски Фондови</h4>
+            <div style="background: #10b981; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="equity-count-badge">0</div>
+          </div>
+          <div id="equity-distribution-chart" style="height: 250px;"></div>
+          <div id="equity-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
+        <!-- Bond Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #3b82f6;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">🏛️</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Обврзнички Фондови</h4>
+            <div style="background: #3b82f6; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="bond-count-badge">0</div>
+          </div>
+          <div id="bond-distribution-chart" style="height: 250px;"></div>
+          <div id="bond-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
+        <!-- Balanced Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #8b5cf6;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">⚖️</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Балансирани Фондови</h4>
+            <div style="background: #8b5cf6; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="balanced-count-badge">0</div>
+          </div>
+          <div id="balanced-distribution-chart" style="height: 250px;"></div>
+          <div id="balanced-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
+        <!-- Money Market Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #f59e0b;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">💰</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Парични Фондови</h4>
+            <div style="background: #f59e0b; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="money-count-badge">0</div>
+          </div>
+          <div id="money-distribution-chart" style="height: 250px;"></div>
+          <div id="money-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div style="background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border-color);">
+      <h3 style="color: var(--accent-gold); margin-bottom: 1.5rem; font-size: 1.3rem;">🏆 Најголеми Фондови по Вредност</h3>
+      <div id="top-funds-list" style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        Се вчитуваат податоци...
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="section-header">
+      <h2 class="section-title">За Македонските Инвестициски Фондови</h2>
+      <p class="section-subtitle">Целосен преглед на инвестиционите можности во Република Северна Македонија</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🏛️</div>
+        <h3>Регулиран Пазар</h3>
+        <p>Сите фондови се регулирани од Комисијата за хартии од вредност и лиценцирани според македонското законодавство за инвестициски фондови.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Различни Типови Фондови</h3>
+        <p>Следиме акциски фондови, обврзнички фондови, мешани фондови и фондови на пари според класификацијата на МАПАС.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>НАВ Следење</h3>
+        <p>Дневно ажурирање на Нето Средствената Вредност (НАВ) за секој фонд со историски податоци и трендови.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Детална Анализа</h3>
+        <p>Комплетна анализа на перформансите, ризиците, диверзификацијата и споредба со меѓународните стандарди.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Реални Податоци</h3>
+        <p>Податоците се земаат директно од официјалните извори и се ажурираат редовно за да обезбедат прецизни информации.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Инвестициски Увиди</h3>
+        <p>Добијте професионални увиди за трендовите на пазарот и препораки за оптимизација на вашиот портфолио.</p>
+      </div>
+    </div>
+
+    <div class="info-section" style="background: var(--bg-card); padding: 3rem; border-radius: 16px; margin: 3rem 0; border: 1px solid var(--border-color);">
+      <h3 style="color: var(--accent-gold); margin-bottom: 1.5rem; font-size: 1.5rem;">Зошто да ги следите македонските фондови?</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; color: var(--text-secondary);">
+        <div>
+          <h4 style="color: var(--text-primary); margin-bottom: 1rem;">🎯 Локални Инвестиции</h4>
+          <p>Македонските фондови инвестираат во локални компании и хартии од вредност, овозможувајќи ви да учествувате во развојот на домашната економија.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--text-primary); margin-bottom: 1rem;">💼 Професионално Управување</h4>
+          <p>Фондовите се управувани од лиценцирани друштва за управување со инвестициски фондови со докажано искуство на пазарот.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--text-primary); margin-bottom: 1rem;">🛡️ Правна Заштита</h4>
+          <p>Инвеститорите се заштитени со македонското законодавство и се под надзор на регулаторните тела.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--text-primary); margin-bottom: 1rem;">📋 Транспарентност</h4>
+          <p>Редовно објавување на извештаи, НАВ и состав на портфолиото според регулаторните барања.</p>
         </div>
       </div>
     </div>
   </section>
 
   <section class="section" id="analytics">
-    <h2 style="text-align:center; margin-bottom:2rem;">Analytics & Insights</h2>
-    <div class="features">
-      <div class="card">
-        <h3>Real-time Monitoring</h3>
-        <p>Track fund performance in real-time with live data feeds and instant updates on market changes.</p>
-      </div>
-      <div class="card">
-        <h3>Intelligent Alerts</h3>
-        <p>Receive smart notifications based on your risk tolerance and performance thresholds.</p>
-      </div>
-      <div class="card">
-        <h3>Predictive Analytics</h3>
-        <p>Leverage AI-powered insights to forecast trends and optimize your investment strategy.</p>
-      </div>
-      <div class="card">
-        <h3>Risk Assessment</h3>
-        <p>Comprehensive risk analysis with volatility metrics, correlation analysis, and stress testing.</p>
-      </div>
-      <div class="card">
-        <h3>Performance Benchmarking</h3>
-        <p>Compare your fund performance against market indices and peer funds for better decision making.</p>
-      </div>
-      <div class="card">
-        <h3>Custom Reports</h3>
-        <p>Generate detailed reports and export data for further analysis and compliance requirements.</p>
-      </div>
+    <div class="section-header">
+      <h2 class="section-title">Напредна Аналитика</h2>
+      <p class="section-subtitle">Професионални алатки за целосна анализа и оптимизација на фондовите</p>
     </div>
-  </section>
-
-  <section class="section" id="alerts">
-    <h2 style="text-align:center; margin-bottom:3rem; color: var(--accent-color);">Alert Configuration</h2>
     
-    <div class="charts-container">
-      <div class="chart-card">
-        <h3>Alert History</h3>
-        <div id="alerts-timeline" class="chart-placeholder">
-          Alert timeline and history will be displayed here
-        </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Податоци во Реално Време</h3>
+        <p>Пристап до живи пазарни податоци со милисекундна прецизност. Следење на НАВ на фондовите, движења на пазарот и промени во портфолиото.</p>
       </div>
-      
-      <div class="chart-card">
-        <h3>Alert Statistics</h3>
-        <div id="alerts-stats" class="chart-placeholder">
-          Alert frequency and statistics will be displayed here
-        </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Паметен Систем за Известувања</h3>
+        <p>Известувања засновани на вештачка интелигенција врз основа на граници на волатилност, показатели за перформанси и параметри за ризик.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Предвидување на Трендови</h3>
+        <p>Алгоритми за машинско учење анализираат пазарни обрасци за да предвидат потенцијални исходи и предложат оптимални стратегии.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h3>Процена на Ризик</h3>
+        <p>Сеопфатна анализа на ризикот вклучувајќи VaR, стрес тестирање, корелациони матрици и моделирање на сценарија.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Споредба со Бенчмарк</h3>
+        <p>Споредете перформанси против главни индекси, слични фондови и приспособени бенчмаркови со детална анализа.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Регулаторни Извештаи</h3>
+        <p>Автоматска генерација на регулаторни извештаи, даночни документи и детални изјави за перформанси.</p>
       </div>
     </div>
   </section>
 
   <footer class="footer">
-    <p>&copy; 2025 Candelabra. All rights reserved.</p>
+    <div style="max-width: 800px; margin: 0 auto; text-align: left;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+        <div>
+          <h4 style="color: var(--accent-green); margin-bottom: 1rem;">За Проектот</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            ФондАларм е независна платформа за следење на македонските инвестициски фондови. 
+            Податоците се земаат од јавно достапни извори и се користат за едукациски цели.
+          </p>
+        </div>
+        <div>
+          <h4 style="color: var(--accent-blue); margin-bottom: 1rem;">Правни Информации</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            Оваа платформа не дава инвестициски совети. Секогаш консултирајте се со 
+            лиценциран финансиски советник пред донесување инвестициски одлуки.
+          </p>
+        </div>
+        <div>
+          <h4 style="color: var(--accent-gold); margin-bottom: 1rem;">Контакт</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            За прашања или предлози:<br/>
+            <a href="mailto:fund-alarm@candelabra.mk" style="color: var(--accent-green);">fund-alarm@candelabra.mk</a>
+          </p>
+        </div>
+      </div>
+      <div style="text-align: center; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+        <p style="color: var(--text-muted);">&copy; 2025 Candelabra. Сите права задржани.</p>
+      </div>
+    </div>
   </footer>
 
   <script type="module">
     // Background animation - same as main page
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
+    (function() {
+      const canvas = document.getElementById('bgCanvas');
+      if (!canvas) {
+        console.warn('Background canvas not found, skipping animation');
+        return;
+      }
+      
+      const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -444,158 +1121,822 @@
       const lines = csvText.trim().split('\n');
       if (lines.length === 0) return null;
       
-      const headers = lines[0].split(',').map(h => h.trim());
+      // Parse CSV with proper handling of quotes and commas
+      function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      }
+      
+      const headers = parseCSVLine(lines[0]);
       const data = [];
       
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        const row = {};
-        headers.forEach((header, index) => {
-          row[header] = values[index] || '';
-        });
-        data.push(row);
+        if (lines[i].trim()) { // Skip empty lines
+          const values = parseCSVLine(lines[i]);
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+          });
+          data.push(row);
+        }
       }
       
       return { headers, data };
     }
 
-    // Chart creation functions
+    // Global variables for dashboard state
+    let currentTimePeriod = '1M';
+    let allFundData = {};
+    let visibleFunds = {};
+
+    // Fund type dashboard functions
+
+
+    function organizeFundData(csvData) {
+      const fundData = {
+        equity: {},
+        bond: {},
+        balanced: {},
+        money: {}
+      };
+
+      if (!csvData || !csvData.data) {
+        console.warn('No CSV data available for organization');
+        return fundData;
+      }
+
+      // List of active funds to include
+      const activeFunds = [
+        'Иново Статус Балансиран',
+        'НЛБ БРИК',
+        'НЛБ Америка',
+        'КБ Инвест - Балансиран',
+        'КБ Инвест - Обврзници',
+        'КБ Инвест Паричен',
+        'НЛБ Кеш Депозит',
+        'НЛБ Топ Брендови',
+        'ВФП Премиум Акции',
+        'ВФП Кеш Депозит',
+        'ВФП БОНД',
+        'КБ Инвест - МБИ 10',
+        'Граве Глобал',
+        'ВФП Дивиденда Акции',
+        'КБ Инвест - Акции',
+        'КБ Инвест - Златен фонд',
+        'ВЕГА СВЕТ',
+        'ВЕГА ФИНАНСИИ',
+        'ВЕГА ТЕХНОЛОГИЈА',
+        'ВЕГА КЕШ',
+        'Иново Статус Солар',
+        'Граве Флекс Бонд Евро',
+        'ВФП Етикс Акции',
+        'НЛБ Обврзници'
+      ];
+
+      console.log('Organizing data from', csvData.data.length, 'rows');
+      console.log('Filtering for', activeFunds.length, 'active funds');
+      let processedRows = 0;
+
+      csvData.data.forEach(row => {
+        const fundName = row['Назив на отворениот инвестиционен фонд'];
+        const valuationDate = row['Датум на вреднување'];
+        const calculationDate = row['Датум на пресметка на документот за удел'];
+        const date = valuationDate || calculationDate;
+        const value = parseFloat(row['Дневна последна продажна цена на документот за удел'] || 0);
+        
+        // Only process funds that are in our active funds list
+        if (!fundName || !activeFunds.includes(fundName) || !date || !value || value <= 0) return;
+
+        // Determine fund type based on fund name
+        let fundType = 'equity'; // default to equity
+        const lowerName = fundName.toLowerCase();
+        
+        if (lowerName.includes('кеш') || lowerName.includes('паричен') || lowerName.includes('депозит') || lowerName.includes('cash') || lowerName.includes('money')) {
+          fundType = 'money';
+        } else if (lowerName.includes('бонд') || lowerName.includes('обврзници') || lowerName.includes('bond') || lowerName.includes('облигации')) {
+          fundType = 'bond';
+        } else if (lowerName.includes('балансиран') || lowerName.includes('флекс') || lowerName.includes('balanced') || lowerName.includes('микс')) {
+          fundType = 'balanced';
+        }
+
+        if (!fundData[fundType][fundName]) {
+          fundData[fundType][fundName] = [];
+        }
+
+        // Parse date properly - handle DD.MM.YYYY format
+        let timestamp;
+        try {
+          const dateParts = date.split('.');
+          if (dateParts.length === 3) {
+            // DD.MM.YYYY format
+            const day = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+            const year = parseInt(dateParts[2]);
+            timestamp = new Date(year, month, day).getTime();
+          } else {
+            timestamp = new Date(date).getTime();
+          }
+        } catch (e) {
+          console.warn('Error parsing date:', date);
+          return;
+        }
+
+        if (isNaN(timestamp)) return;
+
+        fundData[fundType][fundName].push({
+          date: date,
+          value: value,
+          timestamp: timestamp
+        });
+
+        processedRows++;
+      });
+
+      console.log('Processed', processedRows, 'valid rows');
+
+      // Sort data points by date for each fund and remove duplicates
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)); // 30 days ago
+      
+      Object.keys(fundData).forEach(fundType => {
+        const activeFunds = {};
+        
+        Object.keys(fundData[fundType]).forEach(fundName => {
+          // Sort by timestamp
+          fundData[fundType][fundName].sort((a, b) => a.timestamp - b.timestamp);
+          
+          // Remove duplicate dates, keeping the latest value for each date
+          const dateMap = new Map();
+          
+          fundData[fundType][fundName].forEach(item => {
+            const dateKey = item.date;
+            if (!dateMap.has(dateKey) || item.timestamp > dateMap.get(dateKey).timestamp) {
+              dateMap.set(dateKey, item);
+            }
+          });
+          
+          const uniqueData = Array.from(dateMap.values()).sort((a, b) => a.timestamp - b.timestamp);
+          
+          // Check if fund has recent data (within last 30 days)
+          const latestDataPoint = uniqueData[uniqueData.length - 1];
+          if (latestDataPoint && latestDataPoint.timestamp >= thirtyDaysAgo.getTime()) {
+            activeFunds[fundName] = uniqueData;
+          }
+        });
+        
+        // Replace with only active funds
+        fundData[fundType] = activeFunds;
+      });
+
+      // Log summary of organized data
+      console.log('Organized ACTIVE fund data summary (funds with data in last 30 days):');
+      let totalActiveFunds = 0;
+      Object.keys(fundData).forEach(fundType => {
+        const fundCount = Object.keys(fundData[fundType]).length;
+        totalActiveFunds += fundCount;
+        console.log(`${fundType}: ${fundCount} active funds`);
+        if (fundCount > 0) {
+          Object.keys(fundData[fundType]).slice(0, 3).forEach(fundName => {
+            const dataPoints = fundData[fundType][fundName].length;
+            const latestDate = fundData[fundType][fundName][dataPoints - 1].date;
+            console.log(`  - ${fundName}: ${dataPoints} data points (latest: ${latestDate})`);
+          });
+          if (fundCount > 3) {
+            console.log(`  ... and ${fundCount - 3} more active funds`);
+          }
+        }
+      });
+      console.log(`Total active funds: ${totalActiveFunds}`);
+
+      return fundData;
+    }
+
+    // Placeholder function to maintain compatibility
     function createPortfolioChart(csvData) {
       if (!csvData || !csvData.data.length) {
-        showPlaceholder('portfolio-chart', 'No portfolio data available');
+        showPlaceholder('portfolio-chart', 'Нема достапни податоци за портфолиото');
         return;
       }
 
-      // Assuming CSV has columns: date, value
       const trace = {
         x: csvData.data.map(row => row.date || row.Date),
         y: csvData.data.map(row => parseFloat(row.value || row.Value || 0)),
         type: 'scatter',
         mode: 'lines+markers',
-        line: { color: '#a46eff', width: 3 },
-        marker: { color: '#ffe680', size: 6 }
+        line: { color: '#00d4aa', width: 3 },
+        marker: { color: '#4a9eff', size: 6 },
+        fill: 'tonexty',
+        fillcolor: 'rgba(0, 212, 170, 0.1)'
       };
 
       const layout = {
         title: {
-          text: 'Portfolio Performance',
-          font: { color: '#ffe680' }
+          text: 'Portfolio Value Over Time',
+          font: { color: '#f7b801', size: 16 }
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(26,26,46,0.8)',
-        font: { color: '#ffffff' },
+        plot_bgcolor: 'rgba(42, 54, 85, 0.3)',
+        font: { color: '#b8c5d6' },
         xaxis: { 
-          gridcolor: '#444',
-          tickfont: { color: '#ccc' }
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' },
+          showgrid: true
         },
         yaxis: { 
-          gridcolor: '#444',
-          tickfont: { color: '#ccc' }
-        }
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' },
+          showgrid: true,
+          tickformat: '$,.0f'
+        },
+        margin: { t: 40, r: 20, b: 40, l: 60 }
       };
 
-      Plotly.newPlot('portfolio-chart', [trace], layout, { responsive: true });
+      Plotly.newPlot('portfolio-chart', [trace], layout, { responsive: true, displayModeBar: false });
     }
 
     function createAllocationChart(csvData) {
       if (!csvData || !csvData.data.length) {
-        showPlaceholder('allocation-chart', 'No allocation data available');
+        showPlaceholder('allocation-chart', 'Нема достапни податоци за распределба');
         return;
       }
 
-      // Assuming CSV has columns: fund_name, allocation
       const trace = {
         values: csvData.data.map(row => parseFloat(row.allocation || row.Allocation || 0)),
         labels: csvData.data.map(row => row.fund_name || row.Fund || row.Name),
         type: 'pie',
         marker: {
-          colors: ['#a46eff', '#ffe680', '#ff6ec7', '#7f3fee', '#1a1a2e', '#4a90e2']
+          colors: ['#00d4aa', '#4a9eff', '#f7b801', '#8b5cf6', '#ff5757', '#10b981']
         },
-        textfont: { color: '#ffffff' }
+        textfont: { color: '#ffffff', size: 12 },
+        hovertemplate: '<b>%{label}</b><br>Allocation: %{value}%<br>Value: $%{customdata}<extra></extra>',
+        hole: 0.4
       };
 
       const layout = {
         title: {
-          text: 'Fund Allocation',
-          font: { color: '#ffe680' }
+          text: 'Asset Allocation Breakdown',
+          font: { color: '#f7b801', size: 16 }
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#ffffff' }
+        font: { color: '#b8c5d6' },
+        showlegend: true,
+        legend: {
+          orientation: 'v',
+          x: 1.02,
+          y: 0.5,
+          font: { color: '#b8c5d6' }
+        },
+        margin: { t: 40, r: 120, b: 40, l: 40 }
       };
 
-      Plotly.newPlot('allocation-chart', [trace], layout, { responsive: true });
+      Plotly.newPlot('allocation-chart', [trace], layout, { responsive: true, displayModeBar: false });
     }
 
     function createTrendsChart(csvData) {
       if (!csvData || !csvData.data.length) {
-        showPlaceholder('trends-chart', 'No trends data available');
+        showPlaceholder('trends-chart', 'Нема достапни податоци за трендови');
         return;
       }
 
-      // Example multi-line chart for different funds
       const fundNames = [...new Set(csvData.data.map(row => row.fund_name || row.Fund))];
+      const colors = ['#00d4aa', '#4a9eff', '#f7b801', '#8b5cf6', '#ff5757'];
+      
       const traces = fundNames.map((fund, index) => {
         const fundData = csvData.data.filter(row => (row.fund_name || row.Fund) === fund);
         return {
           x: fundData.map(row => row.date || row.Date),
           y: fundData.map(row => parseFloat(row.performance || row.Performance || 0)),
           type: 'scatter',
-          mode: 'lines',
+          mode: 'lines+markers',
           name: fund,
           line: { 
-            color: ['#a46eff', '#ffe680', '#ff6ec7', '#7f3fee'][index % 4],
+            color: colors[index % colors.length],
             width: 2
-          }
+          },
+          marker: { size: 4 }
         };
       });
 
       const layout = {
         title: {
-          text: 'Performance Trends',
-          font: { color: '#ffe680' }
+          text: 'Fund Performance Comparison',
+          font: { color: '#f7b801', size: 16 }
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(26,26,46,0.8)',
-        font: { color: '#ffffff' },
-        xaxis: { gridcolor: '#444' },
-        yaxis: { gridcolor: '#444' },
-        legend: { font: { color: '#ffffff' } }
+        plot_bgcolor: 'rgba(42, 54, 85, 0.3)',
+        font: { color: '#b8c5d6' },
+        xaxis: { 
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' }
+        },
+        yaxis: { 
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' },
+          tickformat: '+.1%'
+        },
+        legend: { 
+          font: { color: '#b8c5d6' },
+          bgcolor: 'rgba(30, 38, 66, 0.8)'
+        },
+        margin: { t: 40, r: 20, b: 40, l: 60 }
       };
 
-      Plotly.newPlot('trends-chart', traces, layout, { responsive: true });
+      Plotly.newPlot('trends-chart', traces, layout, { responsive: true, displayModeBar: false });
     }
 
     function createRiskChart(csvData) {
       if (!csvData || !csvData.data.length) {
-        showPlaceholder('risk-chart', 'No risk data available');
+        showPlaceholder('risk-chart', 'Нема достапни податоци за ризик');
         return;
       }
 
-      // Bar chart for risk metrics
       const trace = {
         x: csvData.data.map(row => row.fund_name || row.Fund),
         y: csvData.data.map(row => parseFloat(row.risk_score || row.Risk || 0)),
         type: 'bar',
         marker: {
-          color: '#ff6ec7',
+          color: csvData.data.map(row => {
+            const risk = parseFloat(row.risk_score || row.Risk || 0);
+            if (risk < 3) return '#10b981'; // Low risk - green
+            if (risk < 5) return '#f7b801'; // Medium risk - yellow
+            return '#ff5757'; // High risk - red
+          }),
           opacity: 0.8
-        }
+        },
+        text: csvData.data.map(row => `Risk: ${row.risk_score || row.Risk || 0}`),
+        textposition: 'auto'
       };
 
       const layout = {
         title: {
-          text: 'Risk Metrics',
-          font: { color: '#ffe680' }
+          text: 'Risk Assessment by Fund',
+          font: { color: '#f7b801', size: 16 }
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(26,26,46,0.8)',
-        font: { color: '#ffffff' },
-        xaxis: { gridcolor: '#444' },
-        yaxis: { gridcolor: '#444' }
+        plot_bgcolor: 'rgba(42, 54, 85, 0.3)',
+        font: { color: '#b8c5d6' },
+        xaxis: { 
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' }
+        },
+        yaxis: { 
+          gridcolor: '#334566',
+          tickfont: { color: '#8a9bb5' },
+          title: 'Risk Score'
+        },
+        margin: { t: 40, r: 20, b: 80, l: 60 }
       };
 
-      Plotly.newPlot('risk-chart', [trace], layout, { responsive: true });
+      Plotly.newPlot('risk-chart', [trace], layout, { responsive: true, displayModeBar: false });
+    }
+
+    function createEquityChart() {
+      createFundChart('equity', '📈 Акциски Фондови', '#equity-chart', '#equity-legend');
+    }
+
+    function createBondChart() {
+      createFundChart('bond', '🏛️ Обврзнички Фондови', '#bond-chart', '#bond-legend');
+    }
+
+    function createBalancedChart() {
+      createFundChart('balanced', '⚖️ Балансирани Фондови', '#balanced-chart', '#balanced-legend');
+    }
+
+    function createMoneyChart() {
+      createFundChart('money', '💰 Парични Фондови', '#money-chart', '#money-legend');
+    }
+
+    function createFundChart(fundType, title, chartId, legendId) {
+      const funds = allFundData[fundType] || {};
+      const fundNames = Object.keys(funds);
+      
+      if (fundNames.length === 0) {
+        document.querySelector(chartId).innerHTML = `
+          <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+            Нема достапни податоци за ${title.toLowerCase()}
+          </div>
+        `;
+        return;
+      }
+
+      const colors = generateColors(fundNames.length);
+      const traces = [];
+
+      fundNames.forEach((fundName, index) => {
+        const fundData = funds[fundName];
+        const filteredData = filterDataByPeriod(fundData, currentTimePeriod);
+        
+        traces.push({
+          x: filteredData.map(d => d.date),
+          y: filteredData.map(d => d.value),
+          type: 'scatter',
+          mode: 'lines',
+          name: fundName,
+          line: { 
+            color: colors[index], 
+            width: 2 
+          },
+          visible: visibleFunds[fundType][fundName] ? true : 'legendonly'
+        });
+      });
+
+      const layout = {
+        title: {
+          text: `${title} - Вредности во времето`,
+          font: { color: '#f7b801', size: 16 }
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(30, 41, 59, 0.4)',
+        font: { color: '#b8c5d6' },
+        xaxis: { 
+          title: 'Датум',
+          gridcolor: 'rgba(51, 69, 102, 0.3)',
+          linecolor: 'rgba(51, 69, 102, 0.5)',
+          tickangle: -45
+        },
+        yaxis: { 
+          title: 'Вредност (ден)',
+          gridcolor: 'rgba(51, 69, 102, 0.3)',
+          linecolor: 'rgba(51, 69, 102, 0.5)'
+        },
+        legend: {
+          font: { color: '#b8c5d6', size: 10 },
+          orientation: 'h',
+          y: -0.2
+        },
+        margin: {
+          l: 60,
+          r: 30,
+          t: 60,
+          b: 100
+        }
+      };
+
+      Plotly.newPlot(chartId.substring(1), traces, layout, { 
+        responsive: true, 
+        displayModeBar: false 
+      });
+
+      // Create legend for fund toggles
+      createFundLegend(fundType, fundNames, colors, legendId);
+    }
+
+    function generateColors(count) {
+      const baseColors = [
+        '#00d4aa', '#4a9eff', '#8b5cf6', '#f7b801', '#ff5757',
+        '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444',
+        '#06b6d4', '#6366f1', '#84cc16', '#f97316', '#ec4899'
+      ];
+      
+      const colors = [];
+      for (let i = 0; i < count; i++) {
+        colors.push(baseColors[i % baseColors.length]);
+      }
+      return colors;
+    }
+
+    function createFundLegend(fundType, fundNames, colors, legendId) {
+      const legendContainer = document.querySelector(legendId);
+      if (!legendContainer) return;
+
+      legendContainer.innerHTML = fundNames.map((fundName, index) => `
+        <div class="legend-item" data-fund-type="${fundType}" data-fund-name="${fundName}">
+          <div class="legend-color" style="background-color: ${colors[index]}"></div>
+          <span>${fundName}</span>
+        </div>
+      `).join('');
+    }
+
+    function filterDataByPeriod(data, period) {
+      if (!data || data.length === 0) return [];
+      
+      const now = new Date();
+      let cutoffDate;
+      
+      switch (period) {
+        case '1M':
+          cutoffDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+          break;
+        case '3M':
+          cutoffDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+          break;
+        case '6M':
+          cutoffDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+          break;
+        case '1Y':
+          cutoffDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+          break;
+        case 'ALL':
+        default:
+          return data;
+      }
+      
+      return data.filter(d => d.timestamp >= cutoffDate.getTime());
+    }
+
+    function setupTimeFilterListeners() {
+      document.querySelectorAll('.time-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Update active state
+          document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Update current period and refresh charts
+          currentTimePeriod = this.dataset.period;
+          refreshAllCharts();
+        });
+      });
+    }
+
+    function setupFundToggleListeners() {
+      // Toggle individual funds
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.legend-item')) {
+          const item = e.target.closest('.legend-item');
+          const fundType = item.dataset.fundType;
+          const fundName = item.dataset.fundName;
+          
+          visibleFunds[fundType][fundName] = !visibleFunds[fundType][fundName];
+          item.classList.toggle('hidden');
+          
+          refreshChart(fundType);
+        }
+      });
+
+      // Toggle all funds for a type
+      document.querySelectorAll('.toggle-all-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const fundType = this.dataset.type;
+          const allVisible = Object.values(visibleFunds[fundType] || {}).every(v => v);
+          
+          Object.keys(visibleFunds[fundType] || {}).forEach(fundName => {
+            visibleFunds[fundType][fundName] = !allVisible;
+          });
+          
+          // Update legend visual state
+          document.querySelectorAll(`[data-fund-type="${fundType}"]`).forEach(item => {
+            if (allVisible) {
+              item.classList.add('hidden');
+            } else {
+              item.classList.remove('hidden');
+            }
+          });
+          
+          refreshChart(fundType);
+        });
+      });
+    }
+
+    function refreshAllCharts() {
+      createEquityChart();
+      createBondChart();
+      createBalancedChart();
+      createMoneyChart();
+    }
+
+    function refreshChart(fundType) {
+      switch (fundType) {
+        case 'equity':
+          createEquityChart();
+          break;
+        case 'bond':
+          createBondChart();
+          break;
+        case 'balanced':
+          createBalancedChart();
+          break;
+        case 'money':
+          createMoneyChart();
+          break;
+      }
+    }
+
+    function populateFundsTable(csvData) {
+      console.log('populateFundsTable called with:', csvData);
+      
+      const tableBody = document.getElementById('funds-table-body');
+      if (!tableBody) {
+        console.error('Table body element not found');
+        return;
+      }
+
+      if (!csvData || !csvData.data || !csvData.data.length) {
+        console.warn('No CSV data available for table');
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="8" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+              Нема достапни податоци за фондовите
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // List of active funds to include (same as in organizeFundData)
+      const activeFunds = [
+        'Иново Статус Балансиран',
+        'НЛБ БРИК',
+        'НЛБ Америка',
+        'КБ Инвест - Балансиран',
+        'КБ Инвест - Обврзници',
+        'КБ Инвест Паричен',
+        'НЛБ Кеш Депозит',
+        'НЛБ Топ Брендови',
+        'ВФП Премиум Акции',
+        'ВФП Кеш Депозит',
+        'ВФП БОНД',
+        'КБ Инвест - МБИ 10',
+        'Граве Глобал',
+        'ВФП Дивиденда Акции',
+        'КБ Инвест - Акции',
+        'КБ Инвест - Златен фонд',
+        'ВЕГА СВЕТ',
+        'ВЕГА ФИНАНСИИ',
+        'ВЕГА ТЕХНОЛОГИЈА',
+        'ВЕГА КЕШ',
+        'Иново Статус Солар',
+        'Граве Флекс Бонд Евро',
+        'ВФП Етикс Акции',
+        'НЛБ Обврзници'
+      ];
+
+      console.log('Processing', csvData.data.length, 'rows of CSV data');
+      console.log('Filtering for', activeFunds.length, 'active funds');
+      console.log('Sample row:', csvData.data[0]);
+
+      // Clear existing data
+      tableBody.innerHTML = '';
+
+      // Get unique funds (latest data for each fund)
+      const fundMap = new Map();
+      let processedCount = 0;
+      
+      csvData.data.forEach((row, index) => {
+        const fundName = row['Назив на отворениот инвестиционен фонд'];
+        const calculationDate = row['Датум на пресметка на документот за удел'];
+        const valuationDate = row['Датум на вреднување'];
+        
+        // Only process funds that are in our active funds list
+        if (fundName && fundName.trim() && activeFunds.includes(fundName)) {
+          processedCount++;
+          
+          const dateString = valuationDate || calculationDate || '';
+          if (!dateString) return;
+          
+          // Convert DD.MM.YYYY to timestamp for proper comparison
+          let timestamp = 0;
+          try {
+            const dateParts = dateString.split('.');
+            if (dateParts.length === 3) {
+              const day = parseInt(dateParts[0]);
+              const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+              const year = parseInt(dateParts[2]);
+              timestamp = new Date(year, month, day).getTime();
+            }
+          } catch (e) {
+            console.warn('Error parsing date:', dateString);
+            return;
+          }
+          
+          if (isNaN(timestamp) || timestamp <= 0) return;
+          
+          const currentEntry = fundMap.get(fundName);
+          
+          // Keep the entry with the latest timestamp
+          if (!currentEntry || timestamp > (currentEntry.timestamp || 0)) {
+            fundMap.set(fundName, { ...row, dateKey: dateString, timestamp });
+          }
+        }
+      });
+
+      console.log('Processed', processedCount, 'valid rows, found', fundMap.size, 'unique funds');
+
+      // Sort funds alphabetically
+      const sortedFunds = Array.from(fundMap.values()).sort((a, b) => {
+        const nameA = a['Назив на отворениот инвестиционен фонд'] || '';
+        const nameB = b['Назив на отворениот инвестиционен фонд'] || '';
+        return nameA.localeCompare(nameB, 'mk');
+      });
+
+      console.log('Creating table rows for', sortedFunds.length, 'funds');
+
+      // Create table rows for ALL unique funds
+      sortedFunds.forEach((row, index) => {
+        try {
+          const fundName = row['Назив на отворениот инвестиционен фонд'] || 'Непознат Фонд';
+          const nav = parseFloat(row['Дневна последна продажна цена на документот за удел'] || 100);
+          const valuationDate = row['Датум на вреднување'] || row['Датум на пресметка на документот за удел'] || '18.10.2025';
+          
+          // Determine fund type based on name
+          let fundType = 'Акциски';
+          const lowerName = fundName.toLowerCase();
+          if (lowerName.includes('кеш') || lowerName.includes('паричен') || lowerName.includes('депозит')) {
+            fundType = 'Паричен';
+          } else if (lowerName.includes('бонд') || lowerName.includes('обврзници')) {
+            fundType = 'Обврзници';
+          } else if (lowerName.includes('балансиран') || lowerName.includes('флекс')) {
+            fundType = 'Балансиран';
+          }
+          
+          // Calculate daily change (simplified for demo)
+          const basePrice = 100;
+          const change = nav - basePrice;
+          const dailyPercent = ((nav - basePrice) / basePrice) * 100;
+          const yearlyPercent = dailyPercent * 2; // Simplified yearly estimate
+          
+          // Determine risk level
+          let riskLevel = 'Умерен';
+          if (fundType === 'Паричен') {
+            riskLevel = 'Низок';
+          } else if (fundType === 'Обврзници') {
+            riskLevel = 'Низок';
+          } else if (fundType === 'Балансиран') {
+            riskLevel = 'Умерен';
+          } else {
+            riskLevel = 'Висок';
+          }
+
+          // Determine colors based on values
+          const changeColor = change >= 0 ? 'var(--success)' : 'var(--danger)';
+          const dailyColor = dailyPercent >= 0 ? 'var(--success)' : 'var(--danger)';
+          const yearlyColor = yearlyPercent >= 0 ? 'var(--success)' : 'var(--danger)';
+          
+          // Fund type styling
+          const typeStyles = {
+            'Акциски': { bg: 'rgba(0, 212, 170, 0.2)', color: 'var(--accent-green)' },
+            'Балансиран': { bg: 'rgba(74, 158, 255, 0.2)', color: 'var(--accent-blue)' },
+            'Обврзници': { bg: 'rgba(139, 92, 246, 0.2)', color: 'var(--accent-purple)' },
+            'Паричен': { bg: 'rgba(138, 155, 181, 0.2)', color: 'var(--text-muted)' }
+          };
+          const typeStyle = typeStyles[fundType] || typeStyles['Акциски'];
+
+          // Risk level styling
+          const riskStyles = {
+            'Низок': { bg: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)' },
+            'Умерен': { bg: 'rgba(247, 184, 1, 0.2)', color: 'var(--accent-gold)' },
+            'Висок': { bg: 'rgba(255, 87, 87, 0.2)', color: 'var(--accent-red)' }
+          };
+          const riskStyle = riskStyles[riskLevel] || riskStyles['Умерен'];
+
+          const row_html = `
+            <tr style="border-bottom: 1px solid rgba(51, 69, 102, 0.3); transition: background-color 0.3s ease;" 
+                onmouseover="this.style.backgroundColor='rgba(0, 212, 170, 0.05)'" 
+                onmouseout="this.style.backgroundColor='transparent'">
+              <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">${fundName}</td>
+              <td style="padding: 1rem; color: var(--text-secondary);">
+                <span style="background: ${typeStyle.bg}; color: ${typeStyle.color}; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem;">${fundType}</span>
+              </td>
+              <td style="padding: 1rem; text-align: right; color: var(--text-primary); font-weight: 600;">${nav.toLocaleString('mk-MK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+              <td style="padding: 1rem; text-align: right; color: ${changeColor};">${change >= 0 ? '+' : ''}${change.toFixed(2)}</td>
+              <td style="padding: 1rem; text-align: right; color: ${dailyColor};">${dailyPercent >= 0 ? '+' : ''}${dailyPercent.toFixed(2)}%</td>
+              <td style="padding: 1rem; text-align: right; color: ${yearlyColor};">${yearlyPercent >= 0 ? '+' : ''}${yearlyPercent.toFixed(1)}%</td>
+              <td style="padding: 1rem; text-align: right;">
+                <span style="background: ${riskStyle.bg}; color: ${riskStyle.color}; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.8rem;">${riskLevel}</span>
+              </td>
+              <td style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">${valuationDate}</td>
+            </tr>
+          `;
+          
+          tableBody.innerHTML += row_html;
+        } catch (error) {
+          console.error('Error creating table row for fund:', row['Назив на отворениот инвестиционен фонд'], error);
+        }
+      });
+
+      console.log('Table population completed with', sortedFunds.length, 'funds');
+
+      // Update stats
+      const totalFunds = fundMap.size;
+      const fundsCountElement = document.getElementById('funds-count');
+      const lastUpdatedElement = document.getElementById('last-updated');
+      
+      if (fundsCountElement) {
+        fundsCountElement.innerHTML = `📊 Вкупно ${totalFunds} активни фондови`;
+      }
+      
+      if (lastUpdatedElement) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('mk-MK');
+        const timeStr = now.toLocaleTimeString('mk-MK', { hour: '2-digit', minute: '2-digit' });
+        lastUpdatedElement.innerHTML = `🕒 Последно ажурирано: ${dateStr} ${timeStr}`;
+      }
     }
 
     function showPlaceholder(elementId, message) {
@@ -609,20 +1950,39 @@
     async function initializeCharts() {
       try {
         // Load the CSV file from the data directory
-        const csvData = await loadCSVFile('./data/fund-data.csv');
+        const csvData = await loadCSVFile('./data/data_all.csv');
         
         if (csvData) {
           console.log('CSV data loaded successfully:', csvData);
-          createPortfolioChart(csvData);
-          createAllocationChart(csvData);
-          createTrendsChart(csvData);
-          createRiskChart(csvData);
+          console.log('Sample data rows:', csvData.data.slice(0, 3));
+          populateFundsTable(csvData);
+          
+          // Organize data by fund types and create dashboard charts
+          allFundData = organizeFundData(csvData);
+          
+          // Initialize visibility state for all funds
+          visibleFunds = { equity: {}, bond: {}, balanced: {}, money: {} };
+          Object.keys(allFundData).forEach(fundType => {
+            Object.keys(allFundData[fundType]).forEach(fundName => {
+              visibleFunds[fundType][fundName] = true;
+            });
+          });
+          
+          setupTimeFilterListeners();
+          setupFundToggleListeners();
+          refreshAllCharts();
+          
+          // Create fund distribution charts
+          createFundDistributionCharts();
+          
+          // Update notifications after fund data is loaded
+          updateNotificationsAfterDataLoad();
         } else {
-          console.warn('Failed to load CSV data, showing placeholders');
-          showPlaceholder('portfolio-chart', 'Portfolio data will appear here when CSV is loaded');
-          showPlaceholder('allocation-chart', 'Fund allocation will appear here when CSV is loaded');
-          showPlaceholder('trends-chart', 'Performance trends will appear here when CSV is loaded');
-          showPlaceholder('risk-chart', 'Risk metrics will appear here when CSV is loaded');
+          console.warn('Неуспешно вчитување на CSV податоци, се прикажуваат заменски');
+          showPlaceholder('portfolio-chart', 'Податоците за портфолиото ќе се појават овде кога ќе се вчитаат CSV податоците');
+          showPlaceholder('allocation-chart', 'Распределбата на фондовите ќе се појави овде кога ќе се вчитаат CSV податоците');
+          showPlaceholder('trends-chart', 'Трендовите на перформансите ќе се појават овде кога ќе се вчитаат CSV податоците');
+          showPlaceholder('risk-chart', 'Метриките за ризик ќе се појават овде кога ќе се вчитаат CSV податоците');
         }
       } catch (error) {
         console.error('Error initializing charts:', error);
@@ -630,7 +1990,642 @@
     }
 
     // Initialize when page loads
-    window.addEventListener('DOMContentLoaded', initializeCharts);
+    window.addEventListener('DOMContentLoaded', function() {
+      initializeCharts();
+      
+      // Add smooth animations for cards
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // Observe all chart cards and feature cards
+      document.querySelectorAll('.chart-card, .feature-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+      });
+
+      // Update market status based on time
+      function updateMarketStatus() {
+        const now = new Date();
+        const hour = now.getHours();
+        const day = now.getDay();
+        const isWeekday = day >= 1 && day <= 5;
+        const isMarketHours = hour >= 9 && hour <= 16;
+        
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.market-status span');
+        
+        if (statusDot && statusText) {
+          if (isMarketHours && isWeekday) {
+            statusDot.style.background = '#10b981';
+            statusText.textContent = 'Пазарите Отворени';
+          } else if (isWeekday) {
+            statusDot.style.background = '#f59e0b';
+            statusText.textContent = 'Пред/По Работно Време';
+          } else {
+            statusDot.style.background = '#8a9bb5';
+            statusText.textContent = 'Пазарите Затворени';
+          }
+        }
+      }
+
+      updateMarketStatus();
+      setInterval(updateMarketStatus, 60000); // Update every minute
+
+      // Add hover effects to stat items
+      document.querySelectorAll('.stat-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+          this.style.transform = 'scale(1.05)';
+          this.style.transition = 'transform 0.3s ease';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+          this.style.transform = 'scale(1)';
+        });
+      });
+    });
+
+    // Price Change Notifications
+    let priceChangeAlerts = [];
+    
+    function calculatePriceChanges() {
+      if (!allFundData) {
+        console.warn('No fund data available for price change calculation');
+        return [];
+      }
+      
+      console.log('Starting price change calculation...');
+      const alerts = [];
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+      const oneMonthAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+      const sixMonthsAgo = new Date(now.getTime() - (180 * 24 * 60 * 60 * 1000));
+      
+      let totalFunds = 0;
+      
+      Object.keys(allFundData).forEach(fundType => {
+        Object.keys(allFundData[fundType]).forEach(fundName => {
+          totalFunds++;
+          const fundData = allFundData[fundType][fundName];
+          if (!fundData || fundData.length < 2) {
+            console.log(`Skipping ${fundName}: insufficient data (${fundData?.length || 0} points)`);
+            return;
+          }
+          
+          // Sort by timestamp to ensure we have the latest data first
+          const sortedData = [...fundData].sort((a, b) => b.timestamp - a.timestamp);
+          const latestPoint = sortedData[0];
+          const latestPrice = latestPoint.value;
+          
+          // Find price points for different periods
+          const weekAgoPoint = findClosestPricePoint(sortedData, oneWeekAgo.getTime());
+          const monthAgoPoint = findClosestPricePoint(sortedData, oneMonthAgo.getTime());
+          const sixMonthsAgoPoint = findClosestPricePoint(sortedData, sixMonthsAgo.getTime());
+          
+          // Calculate percentage changes
+          if (weekAgoPoint) {
+            const weekChange = ((latestPrice - weekAgoPoint.value) / weekAgoPoint.value) * 100;
+            if (Math.abs(weekChange) >= 1) {
+              alerts.push({
+                fundName,
+                fundType,
+                period: '7 дена',
+                change: weekChange,
+                currentPrice: latestPrice,
+                previousPrice: weekAgoPoint.value,
+                severity: Math.abs(weekChange) >= 3 ? 'high' : 'medium',
+                icon: weekChange > 0 ? '📈' : '📉'
+              });
+            }
+          }
+          
+          if (monthAgoPoint) {
+            const monthChange = ((latestPrice - monthAgoPoint.value) / monthAgoPoint.value) * 100;
+            if (Math.abs(monthChange) >= 5) {
+              alerts.push({
+                fundName,
+                fundType,
+                period: '30 дена',
+                change: monthChange,
+                currentPrice: latestPrice,
+                previousPrice: monthAgoPoint.value,
+                severity: Math.abs(monthChange) >= 10 ? 'high' : 'medium',
+                icon: monthChange > 0 ? '🚀' : '📉'
+              });
+            }
+          }
+          
+          if (sixMonthsAgoPoint) {
+            const sixMonthChange = ((latestPrice - sixMonthsAgoPoint.value) / sixMonthsAgoPoint.value) * 100;
+            if (Math.abs(sixMonthChange) >= 10) {
+              alerts.push({
+                fundName,
+                fundType,
+                period: '6 месеци',
+                change: sixMonthChange,
+                currentPrice: latestPrice,
+                previousPrice: sixMonthsAgoPoint.value,
+                severity: Math.abs(sixMonthChange) >= 20 ? 'high' : 'medium',
+                icon: sixMonthChange > 0 ? '🎯' : '⚡'
+              });
+            }
+          }
+        });
+      });
+      
+      console.log(`Processed ${totalFunds} funds, found ${alerts.length} alerts`);
+      
+      // Sort by severity and change percentage
+      return alerts.sort((a, b) => {
+        if (a.severity !== b.severity) {
+          return a.severity === 'high' ? -1 : 1;
+        }
+        return Math.abs(b.change) - Math.abs(a.change);
+      });
+    }
+    
+    function findClosestPricePoint(sortedData, targetTimestamp) {
+      let closest = null;
+      let minDiff = Infinity;
+      
+      for (const point of sortedData) {
+        const diff = Math.abs(point.timestamp - targetTimestamp);
+        if (diff < minDiff && point.timestamp <= targetTimestamp) {
+          minDiff = diff;
+          closest = point;
+        }
+      }
+      
+      return closest;
+    }
+    
+    function displayPriceChangeAlerts() {
+      const container = document.getElementById('auto-alerts');
+      if (!container) {
+        console.warn('Auto-alerts container not found');
+        return;
+      }
+      
+      console.log('Displaying price change alerts. Fund data available:', !!allFundData);
+      console.log('Fund data keys:', Object.keys(allFundData || {}));
+      
+      try {
+        priceChangeAlerts = calculatePriceChanges();
+        console.log('Calculated alerts:', priceChangeAlerts.length);
+      } catch (error) {
+        console.error('Error calculating price changes:', error);
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--accent-red); padding: 2rem;">
+            Грешка при анализирањето на податоците.<br>
+            <small>Ве молиме обидете се повторно подоцна.</small>
+          </div>
+        `;
+        return;
+      }
+      
+      if (priceChangeAlerts.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            Нема значајни промени на цените.<br>
+            <small>Се следат промени: 1%+ неделно, 5%+ месечно, 10%+ за 6 месеци</small>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = priceChangeAlerts.map(alert => {
+        // Color based on direction and severity
+        let changeColor, bgColor, borderColor;
+        
+        if (alert.change > 0) {
+          // Positive changes - green colors
+          if (alert.severity === 'high') {
+            changeColor = '#059669';     // Dark green for text
+            bgColor = 'rgba(16, 185, 129, 0.15)';  // Light green background
+            borderColor = '#10b981';     // Medium green border
+          } else {
+            changeColor = '#10b981';     // Medium green for text
+            bgColor = 'rgba(16, 185, 129, 0.08)';  // Very light green background
+            borderColor = '#6ee7b7';     // Light green border
+          }
+        } else {
+          // Negative changes - red colors
+          if (alert.severity === 'high') {
+            changeColor = '#dc2626';     // Dark red for text
+            bgColor = 'rgba(239, 68, 68, 0.15)';   // Light red background
+            borderColor = '#ef4444';     // Medium red border
+          } else {
+            changeColor = '#ef4444';     // Medium red for text
+            bgColor = 'rgba(239, 68, 68, 0.08)';   // Very light red background
+            borderColor = '#fca5a5';     // Light red border
+          }
+        }
+        
+        return `
+          <div style="
+            background: ${bgColor}; 
+            border: 1px solid ${borderColor}; 
+            border-radius: 8px; 
+            padding: 1rem; 
+            margin-bottom: 0.5rem;
+            border-left: 4px solid ${borderColor};
+          ">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                  <span style="font-size: 1.2rem;">${alert.icon}</span>
+                  <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem;">${alert.fundName}</div>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                  ${getFundTypeLabel(alert.fundType)} • ${alert.period}
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-weight: 700; color: ${changeColor}; font-size: 1.1rem;">
+                  ${alert.change > 0 ? '+' : ''}${alert.change.toFixed(2)}%
+                </div>
+                ${alert.severity === 'high' ? `<div style="font-size: 0.7rem; color: ${changeColor}; font-weight: 600; opacity: 0.8;">${alert.change > 0 ? 'ВИСОК РАСТ' : 'ВИСОК ПАД'}</div>` : ''}
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+              <div>Тековна: <span style="color: var(--text-primary); font-weight: 500;">${alert.currentPrice.toFixed(2)} ден</span></div>
+              <div>Претходна: <span style="color: var(--text-primary); font-weight: 500;">${alert.previousPrice.toFixed(2)} ден</span></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function getFundTypeLabel(fundType) {
+      const labels = {
+        'equity': 'Акциски',
+        'bond': 'Обврзнички', 
+        'balanced': 'Балансиран',
+        'money': 'Паричен'
+      };
+      return labels[fundType] || fundType;
+    }
+
+    // Fund Distribution Charts
+    function createFundDistributionCharts() {
+      if (!allFundData) {
+        console.warn('No fund data available for distribution charts');
+        return;
+      }
+
+      console.log('Creating fund distribution charts...');
+      
+      // Calculate fund type distributions
+      const fundTypeData = {};
+      const individualFundData = [];
+      let totalValue = 0;
+      
+      Object.keys(allFundData).forEach(fundType => {
+        let typeTotal = 0;
+        const typeFunds = [];
+        
+        Object.keys(allFundData[fundType]).forEach(fundName => {
+          const fundData = allFundData[fundType][fundName];
+          if (fundData && fundData.length > 0) {
+            // Get latest value
+            const latestData = fundData[fundData.length - 1];
+            const fundValue = latestData.value || 0;
+            
+            typeTotal += fundValue;
+            totalValue += fundValue;
+            
+            typeFunds.push({
+              name: fundName,
+              value: fundValue,
+              type: fundType
+            });
+            
+            individualFundData.push({
+              name: fundName,
+              value: fundValue,
+              type: fundType,
+              typeLabel: getFundTypeLabel(fundType)
+            });
+          }
+        });
+        
+        if (typeTotal > 0) {
+          fundTypeData[fundType] = {
+            total: typeTotal,
+            funds: typeFunds,
+            label: getFundTypeLabel(fundType)
+          };
+        }
+      });
+
+      // Create fund types pie chart
+      createFundTypesPieChart(fundTypeData, totalValue);
+      
+      // Create fund summary stats
+      createFundSummaryStats(fundTypeData, totalValue);
+      
+      // Create individual fund type distribution charts
+      createFundTypeDistributionCharts(fundTypeData);
+      
+      // Create top funds list
+      createTopFundsList(individualFundData);
+    }
+
+    function createFundTypesPieChart(fundTypeData, totalValue) {
+      const labels = [];
+      const values = [];
+      const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b']; // green, blue, purple, orange
+
+      Object.keys(fundTypeData).forEach((fundType, index) => {
+        labels.push(fundTypeData[fundType].label);
+        values.push(fundTypeData[fundType].total);
+      });
+
+      const trace = {
+        labels: labels,
+        values: values,
+        type: 'pie',
+        hole: 0.4,
+        marker: {
+          colors: colors,
+          line: {
+            color: 'var(--bg-primary)',
+            width: 2
+          }
+        },
+        textfont: {
+          color: '#f1f5f9',
+          size: 12
+        },
+        textinfo: 'label+percent',
+        textposition: 'outside'
+      };
+
+      const layout = {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#b8c5d6' },
+        showlegend: true,
+        legend: {
+          orientation: 'v',
+          x: 1,
+          y: 0.5,
+          font: { color: '#b8c5d6', size: 11 }
+        },
+        margin: { t: 20, b: 20, l: 20, r: 100 },
+        annotations: [{
+          font: { size: 16, color: '#f7b801' },
+          showarrow: false,
+          text: `${labels.length}<br>Типови`,
+          x: 0.5,
+          y: 0.5
+        }]
+      };
+
+      Plotly.newPlot('fund-types-chart', [trace], layout, { 
+        responsive: true, 
+        displayModeBar: false 
+      });
+
+      // Update summary
+      const summaryContainer = document.getElementById('fund-types-summary');
+      if (summaryContainer) {
+        const summaryText = Object.keys(fundTypeData).map(fundType => {
+          const percentage = ((fundTypeData[fundType].total / totalValue) * 100).toFixed(1);
+          return `${fundTypeData[fundType].label}: ${percentage}%`;
+        }).join(' • ');
+        
+        summaryContainer.innerHTML = `Распределба: ${summaryText}`;
+      }
+    }
+
+    function createFundSummaryStats(fundTypeData, totalValue) {
+      const statsContainer = document.getElementById('fund-summary-stats');
+      if (!statsContainer) return;
+
+      const typeColors = {
+        'equity': '#10b981',
+        'bond': '#3b82f6', 
+        'balanced': '#8b5cf6',
+        'money': '#f59e0b'
+      };
+
+      const typeIcons = {
+        'equity': '📈',
+        'bond': '🏛️', 
+        'balanced': '⚖️',
+        'money': '💰'
+      };
+
+      statsContainer.innerHTML = Object.keys(fundTypeData).map(fundType => {
+        const data = fundTypeData[fundType];
+        const percentage = ((data.total / totalValue) * 100).toFixed(1);
+        const color = typeColors[fundType] || '#6b7280';
+        const icon = typeIcons[fundType] || '📊';
+
+        return `
+          <div style="
+            background: var(--bg-primary); 
+            border-radius: 12px; 
+            padding: 1.25rem; 
+            text-align: center;
+            border-left: 4px solid ${color};
+          ">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">${icon}</div>
+            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; margin-bottom: 0.25rem;">
+              ${data.label}
+            </div>
+            <div style="font-weight: 700; color: ${color}; font-size: 1.1rem; margin-bottom: 0.25rem;">
+              ${data.total.toFixed(0)} ден
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              ${percentage}% • ${data.funds.length} фонд${data.funds.length > 1 ? 'ови' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update total value badge
+      const totalValueBadge = document.getElementById('total-value-badge');
+      if (totalValueBadge) {
+        totalValueBadge.textContent = `${totalValue.toFixed(0)} ден вкупно`;
+      }
+    }
+
+    function createFundTypeDistributionCharts(fundTypeData) {
+      const typeColors = {
+        'equity': '#10b981',
+        'bond': '#3b82f6', 
+        'balanced': '#8b5cf6',
+        'money': '#f59e0b'
+      };
+
+      Object.keys(fundTypeData).forEach(fundType => {
+        const data = fundTypeData[fundType];
+        const chartId = `${fundType}-distribution-chart`;
+        const summaryId = `${fundType}-distribution-summary`;
+        const countBadgeId = `${fundType}-count-badge`;
+        
+        // Update count badge
+        const countBadge = document.getElementById(countBadgeId);
+        if (countBadge) {
+          countBadge.textContent = `${data.funds.length} фонд${data.funds.length > 1 ? 'ови' : ''}`;
+        }
+
+        if (data.funds.length === 0) {
+          document.getElementById(chartId).innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center;">
+              Нема фондови од овој тип
+            </div>
+          `;
+          return;
+        }
+
+        // Sort funds by value
+        const sortedFunds = data.funds.sort((a, b) => b.value - a.value);
+        
+        const labels = sortedFunds.map(fund => {
+          // Shorten long names for better display
+          return fund.name.length > 25 ? fund.name.substring(0, 22) + '...' : fund.name;
+        });
+        const values = sortedFunds.map(fund => fund.value);
+        
+        // Create color variations of the main type color
+        const baseColor = typeColors[fundType];
+        const colors = sortedFunds.map((_, index) => {
+          const opacity = 1 - (index * 0.15); // Gradually lighter colors
+          return baseColor + Math.floor(Math.max(0.3, opacity) * 255).toString(16).padStart(2, '0');
+        });
+
+        const trace = {
+          labels: labels,
+          values: values,
+          type: 'pie',
+          hole: 0.3,
+          marker: {
+            colors: colors,
+            line: {
+              color: 'var(--bg-primary)',
+              width: 1
+            }
+          },
+          textfont: {
+            color: '#f1f5f9',
+            size: 9
+          },
+          textinfo: 'percent',
+          textposition: 'auto'
+        };
+
+        const layout = {
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          font: { color: '#b8c5d6' },
+          showlegend: false,
+          margin: { t: 10, b: 10, l: 10, r: 10 },
+          annotations: [{
+            font: { size: 12, color: baseColor },
+            showarrow: false,
+            text: `${sortedFunds.length}<br>фонд${sortedFunds.length > 1 ? 'ови' : ''}`,
+            x: 0.5,
+            y: 0.5
+          }]
+        };
+
+        Plotly.newPlot(chartId, [trace], layout, { 
+          responsive: true, 
+          displayModeBar: false 
+        });
+
+        // Update summary
+        const summaryContainer = document.getElementById(summaryId);
+        if (summaryContainer && sortedFunds.length > 0) {
+          const topFund = sortedFunds[0];
+          const topPercentage = ((topFund.value / data.total) * 100).toFixed(1);
+          summaryContainer.innerHTML = `Најголем: ${topFund.name.length > 20 ? topFund.name.substring(0, 20) + '...' : topFund.name} (${topPercentage}%)`;
+        }
+      });
+    }
+
+    function createTopFundsList(individualFundData) {
+      const container = document.getElementById('top-funds-list');
+      if (!container) return;
+
+      const sortedFunds = individualFundData.sort((a, b) => b.value - a.value);
+      const topFunds = sortedFunds.slice(0, 8); // Top 8 funds
+
+      container.innerHTML = topFunds.map((fund, index) => {
+        const typeColors = {
+          'equity': '#10b981',
+          'bond': '#3b82f6', 
+          'balanced': '#8b5cf6',
+          'money': '#f59e0b'
+        };
+
+        const color = typeColors[fund.type] || '#6b7280';
+        const totalValue = individualFundData.reduce((sum, f) => sum + f.value, 0);
+        const percentage = ((fund.value / totalValue) * 100).toFixed(1);
+
+        return `
+          <div style="
+            background: var(--bg-primary); 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            border-left: 4px solid ${color};
+            transition: transform 0.3s ease;
+          " onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="font-weight: 600; color: var(--text-primary); font-size: 1rem;">#${index + 1}</div>
+              <div style="background: ${color}; color: white; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600;">
+                ${fund.typeLabel}
+              </div>
+            </div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.5rem; line-height: 1.3;">
+              ${fund.name}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 1.2rem; font-weight: 700; color: ${color};">
+                ${fund.value.toFixed(2)} ден
+              </div>
+              <div style="font-size: 0.9rem; color: var(--text-muted);">
+                ${percentage}%
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Initialize notifications when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for fund data to be loaded
+      setTimeout(() => {
+        console.log('Attempting to display price change alerts...');
+        displayPriceChangeAlerts();
+      }, 5000);
+    });    // Update price change alerts when fund data is loaded
+    function updateNotificationsAfterDataLoad() {
+      console.log('Updating notifications after data load...');
+      setTimeout(() => {
+        console.log('Fund data should be loaded, displaying alerts...');
+        displayPriceChangeAlerts();
+      }, 1000);
+    }
+
+    })(); // Close the IIFE
+
   </script>
 </body>
 </html>
