@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Аларм за Фондови - Македонски Инвестициски Фондови</title>
-  <link rel="icon" href="http://candelabra.mk/favicon.ico" type="image/x-icon">
-  <link rel="icon" href="http://candelabra.mk/favicon-16x16.png" type="image/png">
+  <link rel="icon" href="https://candelabra.mk/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="https://candelabra.mk/favicon-16x16.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Plotly.js CDN - ready for later use -->
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
@@ -798,6 +798,68 @@
     </div>
   </section>
 
+  <!-- Sectoral Funds -->
+  <section class="fund-type-section">
+    <div class="fund-type-header">
+      <div class="fund-type-title">
+        <span class="fund-type-icon">🏭</span>
+        <h2>Секторски Фондови</h2>
+        <span class="fund-count" id="sectoral-count">0 фондови</span>
+      </div>
+      <div class="time-filters">
+        <button class="time-filter-btn active" data-period="1M">1М</button>
+        <button class="time-filter-btn" data-period="3M">3М</button>
+        <button class="time-filter-btn" data-period="6M">6М</button>
+        <button class="time-filter-btn" data-period="1Y">1Г</button>
+        <button class="time-filter-btn" data-period="ALL">СИТ</button>
+      </div>
+    </div>
+    <div class="fund-type-content">
+      <div class="fund-info">
+        <h3>Специјализирани фондови што инвестираат во одредени сектори</h3>
+        <p>Фондови кои се фокусираат на одредени сектори како технологија, финансии, енергија и етички инвестирање.</p>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="sectoral">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="sectoral-legend"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="sectoral-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Index Funds -->
+  <section class="fund-type-section">
+    <div class="fund-type-header">
+      <div class="fund-type-title">
+        <span class="fund-type-icon">📊</span>
+        <h2>Индексни Фондови</h2>
+        <span class="fund-count" id="index-count">0 фондови</span>
+      </div>
+      <div class="time-filters">
+        <button class="time-filter-btn active" data-period="1M">1М</button>
+        <button class="time-filter-btn" data-period="3M">3М</button>
+        <button class="time-filter-btn" data-period="6M">6М</button>
+        <button class="time-filter-btn" data-period="1Y">1Г</button>
+        <button class="time-filter-btn" data-period="ALL">СИТ</button>
+      </div>
+    </div>
+    <div class="fund-type-content">
+      <div class="fund-info">
+        <h3>Фондови кои следат индекси и пазарни показатели</h3>
+        <p>Пасивни фондови кои се дизајнирани да ги следат перформансите на одредени пазарни индекси.</p>
+        <div class="fund-controls">
+          <button class="toggle-all-btn" data-type="index">Прикажи/Сокриј Сите</button>
+          <div class="fund-legend" id="index-legend"></div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div id="index-chart" style="width: 100%; height: 400px;"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- Fund Distribution Section -->
   <section class="section" id="fund-distribution">
     <div class="section-header">
@@ -893,6 +955,32 @@
           </div>
         </div>
 
+        <!-- Sectoral Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #ef4444;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">🏭</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Секторски Фондови</h4>
+            <div style="background: #ef4444; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="sectoral-count-badge">0</div>
+          </div>
+          <div id="sectoral-distribution-chart" style="height: 250px;"></div>
+          <div id="sectoral-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
+        <!-- Index Funds Distribution -->
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); border-left: 4px solid #06b6d4;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.4rem;">📊</span>
+            <h4 style="color: var(--text-primary); margin: 0; font-size: 1.1rem;">Индексни Фондови</h4>
+            <div style="background: #06b6d4; color: white; padding: 0.2rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;" id="index-count-badge">0</div>
+          </div>
+          <div id="index-distribution-chart" style="height: 250px;"></div>
+          <div id="index-distribution-summary" style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Вчитување...
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -920,7 +1008,7 @@
       <div class="feature-card">
         <div class="feature-icon">📊</div>
         <h3>Различни Типови Фондови</h3>
-        <p>Следиме акциски фондови, обврзнички фондови, мешани фондови и фондови на пари според класификацијата на МАПАС.</p>
+        <p>Следиме акциски, обврзнички, мешани, парични и индексни фондови.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">💰</div>
@@ -930,7 +1018,7 @@
       <div class="feature-card">
         <div class="feature-icon">🔍</div>
         <h3>Детална Анализа</h3>
-        <p>Комплетна анализа на перформансите, ризиците, диверзификацијата и споредба со меѓународните стандарди.</p>
+        <p>Комплетна анализа на перформансите, ризиците и диверзификацијата.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
@@ -1173,7 +1261,9 @@
         equity: {},
         bond: {},
         balanced: {},
-        money: {}
+        money: {},
+        sectoral: {},
+        index: {}
       };
 
       if (!csvData || !csvData.data) {
@@ -1223,11 +1313,29 @@
         // Only process funds that are in our active funds list
         if (!fundName || !activeFunds.includes(fundName) || !date || !value || value <= 0) return;
 
-        // Determine fund type based on fund name
+        // Determine fund type based on specific fund name or characteristics
         let fundType = 'equity'; // default to equity
         const lowerName = fundName.toLowerCase();
         
-        if (lowerName.includes('кеш') || lowerName.includes('паричен') || lowerName.includes('депозит') || lowerName.includes('cash') || lowerName.includes('money')) {
+        // Define specific fund categorizations
+        const sectoralFunds = [
+          'КБ Инвест - Златен фонд',
+          'ВЕГА ФИНАНСИИ',
+          'ВЕГА ТЕХНОЛОГИЈА',
+          'Иново Статус Солар',
+          'ВФП Етикс Акции'
+        ];
+        
+        const indexFunds = [
+          'КБ Инвест - МБИ 10'
+        ];
+        
+        // Check specific fund categories first
+        if (sectoralFunds.includes(fundName)) {
+          fundType = 'sectoral';
+        } else if (indexFunds.includes(fundName)) {
+          fundType = 'index';
+        } else if (lowerName.includes('кеш') || lowerName.includes('паричен') || lowerName.includes('депозит') || lowerName.includes('cash') || lowerName.includes('money')) {
           fundType = 'money';
         } else if (lowerName.includes('бонд') || lowerName.includes('обврзници') || lowerName.includes('bond') || lowerName.includes('облигации')) {
           fundType = 'bond';
@@ -1523,6 +1631,14 @@
       createFundChart('money', '💰 Парични Фондови', '#money-chart', '#money-legend');
     }
 
+    function createSectoralChart() {
+      createFundChart('sectoral', '🏭 Секторски Фондови', '#sectoral-chart', '#sectoral-legend');
+    }
+
+    function createIndexChart() {
+      createFundChart('index', '📊 Индексни Фондови', '#index-chart', '#index-legend');
+    }
+
     function createFundChart(fundType, title, chartId, legendId) {
       const funds = allFundData[fundType] || {};
       const fundNames = Object.keys(funds);
@@ -1709,6 +1825,8 @@
       createBondChart();
       createBalancedChart();
       createMoneyChart();
+      createSectoralChart();
+      createIndexChart();
     }
 
     function refreshChart(fundType) {
@@ -1724,6 +1842,12 @@
           break;
         case 'money':
           createMoneyChart();
+          break;
+        case 'sectoral':
+          createSectoralChart();
+          break;
+        case 'index':
+          createIndexChart();
           break;
       }
     }
@@ -1961,7 +2085,7 @@
           allFundData = organizeFundData(csvData);
           
           // Initialize visibility state for all funds
-          visibleFunds = { equity: {}, bond: {}, balanced: {}, money: {} };
+          visibleFunds = { equity: {}, bond: {}, balanced: {}, money: {}, sectoral: {}, index: {} };
           Object.keys(allFundData).forEach(fundType => {
             Object.keys(allFundData[fundType]).forEach(fundName => {
               visibleFunds[fundType][fundName] = true;
@@ -2273,7 +2397,9 @@
         'equity': 'Акциски',
         'bond': 'Обврзнички', 
         'balanced': 'Балансиран',
-        'money': 'Паричен'
+        'money': 'Паричен',
+        'sectoral': 'Секторски',
+        'index': 'Индексни'
       };
       return labels[fundType] || fundType;
     }
@@ -2346,7 +2472,7 @@
     function createFundTypesPieChart(fundTypeData, totalValue) {
       const labels = [];
       const values = [];
-      const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b']; // green, blue, purple, orange
+      const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4']; // green, blue, purple, orange, red, cyan
 
       Object.keys(fundTypeData).forEach((fundType, index) => {
         labels.push(fundTypeData[fundType].label);
@@ -2469,7 +2595,9 @@
         'equity': '#10b981',
         'bond': '#3b82f6', 
         'balanced': '#8b5cf6',
-        'money': '#f59e0b'
+        'money': '#f59e0b',
+        'sectoral': '#ef4444',
+        'index': '#06b6d4'
       };
 
       Object.keys(fundTypeData).forEach(fundType => {
@@ -2571,7 +2699,9 @@
           'equity': '#10b981',
           'bond': '#3b82f6', 
           'balanced': '#8b5cf6',
-          'money': '#f59e0b'
+          'money': '#f59e0b',
+          'sectoral': '#ef4444',
+          'index': '#06b6d4'
         };
 
         const color = typeColors[fund.type] || '#6b7280';
