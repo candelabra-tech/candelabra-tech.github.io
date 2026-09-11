@@ -526,7 +526,7 @@
       flex-wrap: wrap;
     }
 
-    .time-filter-btn, .toggle-all-btn {
+    .time-filter-btn, .toggle-all-btn, .view-mode-btn {
       padding: 0.5rem 1rem;
       border: 1px solid rgba(51, 69, 102, 0.5);
       background: rgba(30, 41, 59, 0.8);
@@ -538,13 +538,13 @@
       font-weight: 500;
     }
 
-    .time-filter-btn:hover, .toggle-all-btn:hover {
+    .time-filter-btn:hover, .toggle-all-btn:hover, .view-mode-btn:hover {
       background: rgba(51, 69, 102, 0.8);
       border-color: var(--accent-blue);
       color: var(--text-primary);
     }
 
-    .time-filter-btn.active {
+    .time-filter-btn.active, .view-mode-btn.active {
       background: var(--accent-blue);
       border-color: var(--accent-blue);
       color: white;
@@ -721,6 +721,10 @@
           🕒 Последно ажурирано: Вчитување...
         </div>
       </div>
+      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.8rem; text-align: center;">
+        Извор на податоци: <a href="https://www.mse.mk/mk/open-end-investment-funds" target="_blank" rel="noopener" style="color: var(--accent-green);">Македонска берза (МСЕ)</a>.
+        Само за информативни цели — не претставува инвестициски совет.
+      </p>
     </div>
   </section>
 
@@ -731,7 +735,7 @@
     </div>
 
     <!-- Global Time Filter -->
-    <div style="margin-bottom: 2rem; text-align: center;">
+    <div style="margin-bottom: 1rem; text-align: center;">
       <div class="time-filter-container" style="display: inline-flex; gap: 0.5rem; padding: 0.5rem; background: rgba(51, 69, 102, 0.3); border-radius: 12px;">
         <button class="time-filter-btn active" data-period="1M">1 Месец</button>
         <button class="time-filter-btn" data-period="3M">3 Месеци</button>
@@ -740,7 +744,18 @@
         <button class="time-filter-btn" data-period="ALL">Сите</button>
       </div>
     </div>
-    
+
+    <!-- Global View Mode: comparable % change vs. raw NAV -->
+    <div style="margin-bottom: 2rem; text-align: center;">
+      <div class="time-filter-container" style="display: inline-flex; gap: 0.5rem; padding: 0.5rem; background: rgba(51, 69, 102, 0.3); border-radius: 12px;">
+        <button class="view-mode-btn active" data-mode="percent">% Промена</button>
+        <button class="view-mode-btn" data-mode="absolute">Апсолутна Вредност</button>
+      </div>
+      <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.8rem;">
+        „% Промена" ги прикажува фондовите споредливо едни со други, независно од нивната апсолутна цена.
+      </p>
+    </div>
+
     <!-- Equity Funds Chart -->
     <div class="fund-type-section">
       <div class="fund-type-header">
@@ -1023,12 +1038,12 @@
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
         <h3>Реални Податоци</h3>
-        <p>Податоците се земаат директно од официјалните извори и се ажурираат редовно за да обезбедат прецизни информации.</p>
+        <p>Податоците се земаат директно од <a href="https://www.mse.mk/mk/open-end-investment-funds" target="_blank" rel="noopener" style="color: var(--accent-green);">Македонската берза (МСЕ)</a> и се ажурираат секој работен ден.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📈</div>
-        <h3>Инвестициски Увиди</h3>
-        <p>Добијте професионални увиди за трендовите на пазарот и препораки за оптимизација на вашиот портфолио.</p>
+        <h3>Преглед на Трендови</h3>
+        <p>Следете ги движењата на цените на фондовите низ време. Ова е информативен приказ на јавно достапни податоци, а не инвестициски совет.</p>
       </div>
     </div>
 
@@ -1101,14 +1116,17 @@
         <div>
           <h4 style="color: var(--accent-green); margin-bottom: 1rem;">За Проектот</h4>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-            ФондАларм е независна платформа за следење на македонските инвестициски фондови. 
-            Податоците се земаат од јавно достапни извори и се користат за едукациски цели.
+            ФондАларм е независна платформа за следење на македонските инвестициски фондови.
+            Податоците се земаат директно од <a href="https://www.mse.mk/mk/open-end-investment-funds" target="_blank" rel="noopener" style="color: var(--accent-green);">Македонската берза (МСЕ)</a>,
+            јавно достапен извор, и се користат за едукациски и информативни цели.
           </p>
         </div>
         <div>
           <h4 style="color: var(--accent-blue); margin-bottom: 1rem;">Правни Информации</h4>
           <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
-            Оваа платформа не дава инвестициски совети. Секогаш консултирајте се со 
+            Содржината на оваа платформа е исклучиво информативна. Ние не даваме инвестициски совети,
+            препораки за купување или продажба, ниту финансиска анализа на кој било фонд.
+            Историските перформанси не гарантираат идни резултати. Секогаш консултирајте се со
             лиценциран финансиски советник пред донесување инвестициски одлуки.
           </p>
         </div>
@@ -1250,6 +1268,12 @@
 
     // Global variables for dashboard state
     let currentTimePeriod = '1M';
+    // 'percent': each fund rebased to % change from its first point in the
+    // selected period - the only mode that lets funds be compared, since
+    // they otherwise sit at wildly different NAV levels (e.g. 60 vs 1200).
+    // 'absolute': raw NAV in denars, not comparable across funds but useful
+    // for looking up a fund's actual price.
+    let currentViewMode = 'percent';
     let allFundData = {};
     let visibleFunds = {};
 
@@ -1654,43 +1678,58 @@
 
       const colors = generateColors(fundNames.length);
       const traces = [];
+      const isPercent = currentViewMode === 'percent';
 
       fundNames.forEach((fundName, index) => {
         const fundData = funds[fundName];
         const filteredData = filterDataByPeriod(fundData, currentTimePeriod);
-        
+        if (!filteredData.length) return;
+
+        // Rebase to % change from this fund's first point in the selected
+        // window, so funds with very different NAV levels become directly
+        // comparable. Falls back to absolute NAV in 'absolute' mode.
+        const baseValue = filteredData[0].value;
+        const yValues = isPercent
+          ? filteredData.map(d => (baseValue ? ((d.value / baseValue) - 1) * 100 : null))
+          : filteredData.map(d => d.value);
+
         traces.push({
           x: filteredData.map(d => d.date),
-          y: filteredData.map(d => d.value),
+          y: yValues,
+          customdata: filteredData.map(d => d.value),
           type: 'scatter',
           mode: 'lines',
           name: fundName,
-          line: { 
-            color: colors[index], 
-            width: 2 
+          line: {
+            color: colors[index],
+            width: 2
           },
-          visible: visibleFunds[fundType][fundName] ? true : 'legendonly'
+          visible: visibleFunds[fundType][fundName] ? true : 'legendonly',
+          hovertemplate: isPercent
+            ? `<b>${fundName}</b><br>%{x}<br>Промена: %{y:+.2f}%<br>НАВ: %{customdata:.2f} ден<extra></extra>`
+            : `<b>${fundName}</b><br>%{x}<br>НАВ: %{y:.2f} ден<extra></extra>`
         });
       });
 
       const layout = {
         title: {
-          text: `${title} - Вредности во времето`,
+          text: isPercent ? `${title} - Промена во %` : `${title} - Вредности во времето`,
           font: { color: '#f7b801', size: 16 }
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(30, 41, 59, 0.4)',
         font: { color: '#b8c5d6' },
-        xaxis: { 
+        xaxis: {
           title: 'Датум',
           gridcolor: 'rgba(51, 69, 102, 0.3)',
           linecolor: 'rgba(51, 69, 102, 0.5)',
           tickangle: -45
         },
-        yaxis: { 
-          title: 'Вредност (ден)',
+        yaxis: {
+          title: isPercent ? 'Промена (%)' : 'Вредност (ден)',
           gridcolor: 'rgba(51, 69, 102, 0.3)',
-          linecolor: 'rgba(51, 69, 102, 0.5)'
+          linecolor: 'rgba(51, 69, 102, 0.5)',
+          ticksuffix: isPercent ? '%' : ''
         },
         legend: {
           font: { color: '#b8c5d6', size: 10 },
@@ -1702,12 +1741,16 @@
           r: 30,
           t: 60,
           b: 100
-        }
+        },
+        shapes: isPercent ? [{
+          type: 'line', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 0, y1: 0,
+          line: { color: 'rgba(184, 197, 214, 0.4)', width: 1, dash: 'dot' }
+        }] : []
       };
 
-      Plotly.newPlot(chartId.substring(1), traces, layout, { 
-        responsive: true, 
-        displayModeBar: false 
+      Plotly.newPlot(chartId.substring(1), traces, layout, {
+        responsive: true,
+        displayModeBar: false
       });
 
       // Create legend for fund toggles
@@ -1776,6 +1819,18 @@
           
           // Update current period and refresh charts
           currentTimePeriod = this.dataset.period;
+          refreshAllCharts();
+        });
+      });
+    }
+
+    function setupViewModeListeners() {
+      document.querySelectorAll('.view-mode-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          currentViewMode = this.dataset.mode;
           refreshAllCharts();
         });
       });
@@ -2093,6 +2148,7 @@
           });
           
           setupTimeFilterListeners();
+          setupViewModeListeners();
           setupFundToggleListeners();
           refreshAllCharts();
           
